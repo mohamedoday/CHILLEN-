@@ -13,6 +13,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Three.js (r128) للنماذج والمشاهد ثلاثية الأبعاد -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <!-- GSAP & ScrollTrigger -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
@@ -133,6 +136,25 @@
             transform-style: preserve-3d;
             will-change: transform;
             transition: box-shadow 0.35s ease;
+        }
+
+        /* حاويات المشاهد ثلاثية الأبعاد عبر Three.js */
+        .three-canvas-stage {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .three-canvas-stage canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* بطاقات الطعام التفاعلية ثلاثية الأبعاد */
+        .menu-item-card {
+            transform-style: preserve-3d;
+            will-change: transform;
         }
 
         /* تخصيص شريط التمرير اليدوي لبوصلة المنظور */
@@ -321,64 +343,36 @@
 
                         <div id="perspective-compass-panel" class="hidden mt-3 p-4 rounded-2xl bg-basalt/90 border border-pearl/15 space-y-3 backdrop-blur-md">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <div class="flex justify-between text-[11px] text-slate mb-1">
-                                        <label for="compass-x">المحور الأفقي (X)</label>
-                                        <span id="compass-x-val" class="font-mono text-copper">0.00</span>
-                                    </div>
-                                    <input type="range" id="compass-x" min="-1" max="1" step="0.05" value="0" oninput="onCompassSliderChange()" class="compass-slider w-full">
+                            <div>
+                                <div class="flex justify-between text-[11px] text-slate mb-1">
+                                    <label for="compass-x">المحور الأفقي (X)</label>
+                                    <span id="compass-x-val" class="font-mono text-copper">0.00</span>
                                 </div>
-                                <div>
-                                    <div class="flex justify-between text-[11px] text-slate mb-1">
-                                        <label for="compass-y">المحور الرأسي (Y)</label>
-                                        <span id="compass-y-val" class="font-mono text-copper">0.00</span>
-                                    </div>
-                                    <input type="range" id="compass-y" min="-1" max="1" step="0.05" value="0" oninput="onCompassSliderChange()" class="compass-slider w-full">
+                                <input type="range" id="compass-x" min="-1" max="1" step="0.05" value="0" oninput="onCompassSliderChange()" class="compass-slider w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[11px] text-slate mb-1">
+                                    <label for="compass-y">المحور الرأسي (Y)</label>
+                                    <span id="compass-y-val" class="font-mono text-copper">0.00</span>
                                 </div>
+                                <input type="range" id="compass-y" min="-1" max="1" step="0.05" value="0" oninput="onCompassSliderChange()" class="compass-slider w-full">
                             </div>
-                            <div class="flex justify-between items-center pt-1">
-                                <span class="text-[11px] text-slate/70">يستجيب تلقائياً لحركة المؤشر أو الأسهم</span>
-                                <button type="button" onclick="resetOrbit()" class="text-xs font-bold text-copper hover:underline">إعادة التوسيط</button>
-                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-1">
+                            <span class="text-[11px] text-slate/70">يستجيب تلقائياً لحركة المؤشر أو الأسهم</span>
+                            <button type="button" onclick="resetOrbit()" class="text-xs font-bold text-copper hover:underline">إعادة التوسيط</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- العمود الأيسر: مسرح الطبقات المعمارية المتعاكسة (Multi-Layer Parallax Orbit) -->
+                <!-- العمود الأيسر: مشهد ثلاثي الأبعاد حقيقي عبر Three.js (البازلت، الحوض العاكس، المنارة واللؤلؤة) -->
                 <div class="lg:col-span-6 orbit-stage py-4">
-                    <div id="orbit-container" class="relative mx-auto w-full max-w-lg h-[490px] sm:h-[560px]">
-                        
-                        <!-- الطبقة البعيدة (Depth -14): الأفق السماوي الغسقي -->
-                        <div data-depth="-14" class="parallax-layer absolute -top-7 -left-6 w-3/4 h-3/4 rounded-3xl bg-gradient-to-br from-foam/25 via-abyss-surface to-abyss border border-foam/30 shadow-xl">
-                            <div class="p-4 flex items-center gap-2 text-[10px] font-mono text-foam-light/80 tracking-widest">
-                                <span>TWILIGHT HORIZON // 24°N</span>
-                            </div>
-                        </div>
+                    <div id="orbit-container" class="relative mx-auto w-full max-w-lg h-[500px] sm:h-[570px] rounded-3xl overflow-hidden border border-copper/45 bg-abyss-surface shadow-2xl">
+                        <!-- حاوية Three.js التفاعلية للمشهد المعماري الساحلي -->
+                        <div id="hero-three-stage" class="three-canvas-stage" role="img" aria-label="مجسم معماري ثلاثي الأبعاد لمطعم بحر يضم كتل البازلت وحوض الماء العاكس والنحاس"></div>
 
-                        <!-- الطبقة الخلفية (Depth 14): عمود البازلت المنحوت -->
-                        <div data-depth="14" class="parallax-layer absolute -top-4 -right-5 w-4/5 h-4/5 rounded-3xl bg-basalt border border-basalt-border shadow-2xl">
-                            <div class="p-5 flex justify-between items-center border-b border-pearl/5">
-                                <span class="text-[11px] font-mono text-slate tracking-widest">BASALT MONOLITH // 01</span>
-                                <span class="w-2 h-2 rounded-full bg-copper"></span>
-                            </div>
-                        </div>
-
-                        <!-- الطبقة الوسطى (Depth 26): الستارة المعمارية وحوض الماء العاكس -->
-                        <div id="hero-arch-frame" data-depth="26" class="parallax-layer arch-curtain absolute inset-3 rounded-2xl overflow-hidden border border-copper/45 bg-abyss-surface shadow-2xl">
-                            <img 
-                                src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1000&q=85" 
-                                alt="واجهة مطعم بحر المعمارية المطلة على الحوض المائي العاكس" 
-                                class="w-full h-full object-cover object-center opacity-85 scale-105"
-                                onerror="this.onerror=null; this.src='https://placehold.co/800x1000/152232/F5EFE6?text=BAHR+COASTAL+ARCHITECTURE';"
-                            >
-                            <div class="absolute inset-0 bg-gradient-to-t from-abyss via-abyss/30 to-transparent"></div>
-                            
-                            <!-- انعكاس الضوء الذهبي على حوض الماء في أسفل الإطار -->
-                            <div class="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-abyss via-copper/15 to-transparent pointer-events-none"></div>
-                        </div>
-
-                        <!-- الطبقة الأمامية العلوية (Depth 42): شارة النحاس البحري -->
-                        <div data-depth="42" class="parallax-layer hero-float-badge absolute -top-3 left-4 sm:left-6 px-4 py-3 rounded-2xl bg-abyss/90 backdrop-blur-md border border-copper/55 shadow-xl flex items-center gap-3">
+                        <!-- طبقة علوية ثلاثية الأبعاد (Depth 42): شارة النحاس البحري -->
+                        <div data-depth="42" class="parallax-layer hero-float-badge absolute top-4 left-4 sm:left-5 px-4 py-3 rounded-2xl bg-abyss/90 backdrop-blur-md border border-copper/55 shadow-xl flex items-center gap-3 z-10 pointer-events-none">
                             <div class="w-2.5 h-2.5 rounded-full bg-copper"></div>
                             <div>
                                 <span class="block text-[11px] text-slate">حالة الحوض العاكس</span>
@@ -386,17 +380,16 @@
                             </div>
                         </div>
 
-                        <!-- الطبقة الأمامية السفلية (Depth 52): بطاقة الرمل اللؤلؤي التحريرية -->
-                        <div data-depth="52" class="parallax-layer hero-float-badge absolute -bottom-5 right-4 left-8 sm:left-auto sm:w-80 p-5 sm:p-6 rounded-2xl bg-sand text-abyss shadow-2xl border border-sand-muted">
+                        <!-- طبقة سفلية ثلاثية الأبعاد (Depth 52): بطاقة الرمل اللؤلؤي التحريرية -->
+                        <div data-depth="52" class="parallax-layer hero-float-badge absolute bottom-4 right-4 left-6 sm:left-auto sm:w-80 p-5 sm:p-6 rounded-2xl bg-sand/95 text-abyss shadow-2xl border border-sand-muted z-10 pointer-events-none">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-[11px] font-bold tracking-wider text-copper-dark uppercase">عمارة الساحل</span>
-                                <span class="text-xs font-serif font-bold text-foam-dark">٢٠٢٦</span>
+                                <span class="text-[11px] font-bold tracking-wider text-copper-dark uppercase">عمارة ثلاثية الأبعاد</span>
+                                <span class="text-xs font-serif font-bold text-foam-dark">BAHR 3D</span>
                             </div>
                             <p class="font-serif text-lg sm:text-xl font-bold leading-snug text-abyss">
                                 «تُبنى السكينة عندما يلتقي ثقل البازلت بخفة الماء.»
                             </p>
                         </div>
-
                     </div>
                 </div>
 
@@ -404,12 +397,12 @@
         </div>
     </section>
 
-    <!-- 2. قسم فلسفة العمارة ورحلة التذوق (Scroll-Choreographed Storytelling) -->
+    <!-- 2. قسم فلسفة العمارة ورحلة التذوق (Scroll-Choreographed Storytelling + 3D Architectural Pavilion) -->
     <section id="architecture" class="py-24 pearl-sand-texture text-abyss relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="arch-header flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div class="arch-header flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                 <div class="max-w-2xl">
-                    <span class="text-xs font-bold tracking-widest text-copper-dark uppercase block mb-3">الركائز الحسية الثلاث</span>
+                    <span class="text-xs font-bold tracking-widest text-copper-dark uppercase block mb-3">الركائز الحسية الثلاث والمجسم المعماري</span>
                     <h2 class="font-serif text-4xl sm:text-5xl font-bold text-abyss mb-4">
                         فلسفة المكان والتذوق
                     </h2>
@@ -419,6 +412,40 @@
                 </div>
                 <div class="text-xs font-medium text-foam-dark border-r-2 border-copper pr-3 py-1">
                     عمارة ساحلية مستدامة<br>بإضاءة كهرمانية غير مباشرة
+                </div>
+            </div>
+
+            <!-- نموذج تفاعلي ثلاثي الأبعاد لمناطق الجلوس المعمارية -->
+            <div class="mb-14 rounded-3xl bg-abyss text-pearl border border-basalt-border shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+                <div class="lg:col-span-7 h-[320px] sm:h-[380px] relative bg-abyss-deep">
+                    <div id="pavilion-three-stage" class="three-canvas-stage" role="img" aria-label="نموذج معماري ثلاثي الأبعاد يبرز مناطق الجلوس الثلاث في مطعم بحر"></div>
+                    <div class="absolute top-4 right-4 px-3.5 py-1.5 rounded-xl bg-abyss/85 backdrop-blur-md border border-copper/40 text-xs text-copper font-mono">
+                        3D PAVILION ORBIT
+                    </div>
+                </div>
+                <div class="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between bg-basalt/80">
+                    <div class="space-y-4">
+                        <span class="text-xs font-bold tracking-widest text-foam-light uppercase block">استكشاف الكتل المعمارية ثلاثية الأبعاد</span>
+                        <h3 class="font-serif text-2xl sm:text-3xl font-bold text-pearl">اختر منطقة الجلوس لتوجيه الكاميرا</h3>
+                        <p class="text-sm text-slate leading-relaxed">
+                            ينتقل المشهد المعماري تلقائياً إلى الكتلة المختارة مع إضاءة نحاسية موجهة، ويمكنك الربط المباشر باختيارك داخل نموذج الحجز.
+                        </p>
+                        <div class="grid grid-cols-1 gap-2.5 pt-2">
+                            <button type="button" onclick="focusPavilionZone('شرفة الحوض العاكس', this)" data-zone="شرفة الحوض العاكس" class="pavilion-zone-btn text-right px-4 py-3 rounded-xl bg-copper text-abyss font-bold text-xs sm:text-sm transition-colors">
+                                ١. شرفة الحوض العاكس — محاذاة الماء
+                            </button>
+                            <button type="button" onclick="focusPavilionZone('قاعة الحجر المنحوت', this)" data-zone="قاعة الحجر المنحوت" class="pavilion-zone-btn text-right px-4 py-3 rounded-xl bg-abyss/80 text-pearl hover:border-copper border border-pearl/15 font-medium text-xs sm:text-sm transition-colors">
+                                ٢. قاعة الحجر المنحوت — كتل البازلت والرمل
+                            </button>
+                            <button type="button" onclick="focusPavilionZone('طاولة الشيف المفتوحة', this)" data-zone="طاولة الشيف المفتوحة" class="pavilion-zone-btn text-right px-4 py-3 rounded-xl bg-abyss/80 text-pearl hover:border-copper border border-pearl/15 font-medium text-xs sm:text-sm transition-colors">
+                                ٣. طاولة الشيف المفتوحة — موقد خشب الساج
+                            </button>
+                        </div>
+                    </div>
+                    <div class="pt-5 mt-5 border-t border-pearl/10 flex items-center justify-between text-xs text-slate">
+                        <span id="pavilion-active-label" class="text-copper font-bold">التركيز الحالي: شرفة الحوض العاكس</span>
+                        <a href="#reservation" class="underline hover:text-pearl">الانتقال للحجز ←</a>
+                    </div>
                 </div>
             </div>
 
@@ -865,30 +892,35 @@
                 if (labelEl) labelEl.textContent = 'تفعيل الحركة';
                 if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-copper';
 
-                // تثبيت زاوية ثلاثية الأرباع مصممة مسبقاً في وضع السكون
-                targetOrbit = { x: 0.32, y: -0.22 };
-                currentOrbit = { x: 0.32, y: -0.22 };
+                // تثبيت زاوية ثلاثية الأرباع المعمارية عند x=0.28, y=-0.12 في وضع السكون
+                targetOrbit = { x: 0.28, y: -0.12 };
+                currentOrbit = { x: 0.28, y: -0.12 };
                 applyOrbitTransforms();
                 syncCompassSliders();
 
-                // إعادة ضبط بطاقة الدعوة ثلاثية الأبعاد
+                // إعادة ضبط بطاقة الدعوة وبطاقات القائمة ثلاثية الأبعاد
                 const card3d = document.getElementById('invitation-card-3d');
                 if (card3d) card3d.style.transform = 'none';
+                document.querySelectorAll('.menu-item-card').forEach(card => {
+                    card.style.transform = 'none';
+                });
 
-                // رسم إطار ساكن نظيف على Canvas
+                // رسم إطار ساكن نظيف على Canvas ومشاهد Three.js
                 renderHeroCanvas(0, true);
+                updateThreeScenes(0, true);
             } else {
                 htmlEl.classList.remove('reduced-motion');
                 if (toggleBtn) toggleBtn.setAttribute('aria-pressed', 'false');
                 if (labelEl) labelEl.textContent = 'تهدئة الحركة';
                 if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-foam-light';
+                updateThreeScenes(0, false);
             }
         }
 
         function toggleCalmMotion() {
             isReducedMotion = !isReducedMotion;
             applyMotionTierState();
-            showToast(isReducedMotion ? 'تم تفعيل وضع السكون المعماري' : 'تم تفعيل الحركة التفاعلية الكاملة');
+            showToast(isReducedMotion ? 'تم تفعيل وضع السكون المعماري (x=0.28, y=-0.12)' : 'تم تفعيل الحركة التفاعلية الكاملة');
         }
 
         mediaReduceQuery.addEventListener('change', (e) => {
@@ -904,7 +936,7 @@
         const heroSection = document.getElementById('hero');
         const parallaxLayers = document.querySelectorAll('.parallax-layer');
         
-        let targetOrbit = isReducedMotion ? { x: 0.32, y: -0.22 } : { x: 0, y: 0 };
+        let targetOrbit = isReducedMotion ? { x: 0.28, y: -0.12 } : { x: 0, y: 0 };
         let currentOrbit = { ...targetOrbit };
         let manualCompassActive = false;
 
@@ -918,10 +950,10 @@
 
             parallaxLayers.forEach(layer => {
                 const depth = parseFloat(layer.dataset.depth || 20);
-                const moveX = round3(cx * depth);
-                const moveY = round3(cy * depth);
-                const rotateY = round3(cx * 4.2);
-                const rotateX = round3(-cy * 4.2);
+                const moveX = round3(cx * depth * 0.45);
+                const moveY = round3(cy * depth * 0.45);
+                const rotateY = round3(cx * 3.5);
+                const rotateX = round3(-cy * 3.5);
 
                 layer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             });
@@ -965,16 +997,18 @@
             if (isReducedMotion) {
                 currentOrbit = { ...targetOrbit };
                 applyOrbitTransforms();
+                updateThreeScenes(0, true);
             }
         }
 
         function resetOrbit() {
             manualCompassActive = false;
-            targetOrbit = isReducedMotion ? { x: 0.32, y: -0.22 } : { x: 0, y: 0 };
+            targetOrbit = isReducedMotion ? { x: 0.28, y: -0.12 } : { x: 0, y: 0 };
             syncCompassSliders();
             if (isReducedMotion) {
                 currentOrbit = { ...targetOrbit };
                 applyOrbitTransforms();
+                updateThreeScenes(0, true);
             }
         }
 
@@ -995,6 +1029,329 @@
                 targetOrbit.y = 0;
                 syncCompassSliders();
             });
+        }
+
+        /* ==========================================================================
+           2.5 محرك Three.js ثلاثي الأبعاد: المشهد المعماري الرئيسي والمجسم الجانبي
+           ========================================================================== */
+        let heroThree = null;
+        let pavilionThree = null;
+        let pavilionFocusTarget = new THREE.Vector3(-1.3, 0.2, 0.8);
+        let currentPavilionCamTarget = new THREE.Vector3(-1.3, 0.2, 0.8);
+        let threeElapsed = 0;
+
+        function initHeroThreeScene() {
+            const container = document.getElementById('hero-three-stage');
+            if (!container || typeof THREE === 'undefined') return;
+
+            try {
+                const scene = new THREE.Scene();
+                scene.fog = new THREE.FogExp2(0x0B131E, 0.045);
+
+                const width = container.clientWidth || 500;
+                const height = container.clientHeight || 550;
+                const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
+                camera.position.set(0, 1.4, 7.6);
+                camera.lookAt(0, 0.2, 0);
+
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                renderer.setSize(width, height);
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1.1;
+
+                container.innerHTML = '';
+                container.appendChild(renderer.domElement);
+
+                // إضاءة معمارية متعددة الطبقات (بازلت، نحاس دافئ، وزبد بحري)
+                const ambientLight = new THREE.AmbientLight(0x9FB1BE, 0.75);
+                scene.add(ambientLight);
+
+                const brassKeyLight = new THREE.DirectionalLight(0xC88A55, 2.2);
+                brassKeyLight.position.set(5, 6, 5);
+                scene.add(brassKeyLight);
+
+                const foamRimLight = new THREE.PointLight(0x4A6B7C, 2.6, 16);
+                foamRimLight.position.set(-4.5, 2.5, -2.5);
+                scene.add(foamRimLight);
+
+                const pearlWarmLight = new THREE.PointLight(0xF5EFE6, 1.4, 12);
+                pearlWarmLight.position.set(2.2, 1.5, 3.2);
+                scene.add(pearlWarmLight);
+
+                // خامات العناصر المعمارية
+                const basaltMat = new THREE.MeshStandardMaterial({
+                    color: 0x152232,
+                    roughness: 0.78,
+                    metalness: 0.18
+                });
+                const sandMat = new THREE.MeshStandardMaterial({
+                    color: 0xF5EFE6,
+                    roughness: 0.55,
+                    metalness: 0.05
+                });
+                const brassMat = new THREE.MeshStandardMaterial({
+                    color: 0xC88A55,
+                    roughness: 0.28,
+                    metalness: 0.82
+                });
+                const waterMat = new THREE.MeshStandardMaterial({
+                    color: 0x1E3A4C,
+                    roughness: 0.14,
+                    metalness: 0.72
+                });
+
+                // حوض الماء العاكس
+                const waterGeo = new THREE.PlaneGeometry(11, 11, 48, 48);
+                waterGeo.rotateX(-Math.PI / 2);
+                const waterBasePositions = waterGeo.attributes.position.array.slice();
+                const waterMesh = new THREE.Mesh(waterGeo, waterMat);
+                waterMesh.position.y = -1.25;
+                scene.add(waterMesh);
+
+                // مجسمات قريبة (Near) ومجسمات بعيدة (Far) للحركة المتعاكسة
+                const nearGroup = new THREE.Group();
+                const farGroup = new THREE.Group();
+                scene.add(nearGroup);
+                scene.add(farGroup);
+
+                // عمود البازلت الرئيسي (Near Monolith)
+                const monolithGeo = new THREE.BoxGeometry(1.65, 3.4, 1.65);
+                const monolithMesh = new THREE.Mesh(monolithGeo, basaltMat);
+                monolithMesh.position.set(0.65, 0.35, 0.3);
+                nearGroup.add(monolithMesh);
+
+                // حلقة نحاسية معلقة تتوسط العمارة (Near Brass Ring)
+                const brassRingGeo = new THREE.TorusGeometry(1.45, 0.075, 24, 96);
+                const brassRingMesh = new THREE.Mesh(brassRingGeo, brassMat);
+                brassRingMesh.position.set(-0.2, 0.55, 1.35);
+                nearGroup.add(brassRingMesh);
+
+                // لؤلؤة ساحلية مصقولة داخل المدار
+                const pearlSphereGeo = new THREE.SphereGeometry(0.42, 36, 36);
+                const pearlSphereMesh = new THREE.Mesh(pearlSphereGeo, sandMat);
+                pearlSphereMesh.position.set(-1.35, 0.4, 1.6);
+                nearGroup.add(pearlSphereMesh);
+
+                // كتل صخرية وأقواس بعيدة (Far Architectural Piers)
+                const farPierLeft = new THREE.Mesh(new THREE.BoxGeometry(1.1, 4.4, 1.1), basaltMat);
+                farPierLeft.position.set(-3.1, 0.8, -2.4);
+                farGroup.add(farPierLeft);
+
+                const farPierRight = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.8, 1.2), sandMat);
+                farPierRight.position.set(2.9, 0.0, -2.8);
+                farGroup.add(farPierRight);
+
+                const farCrown = new THREE.Mesh(new THREE.OctahedronGeometry(0.65, 0), brassMat);
+                farCrown.position.set(0.2, 2.55, -2.1);
+                farGroup.add(farCrown);
+
+                // ربط ResizeObserver لضبط النسب عند تغير حجم الحاوية
+                const ro = new ResizeObserver((entries) => {
+                    for (const entry of entries) {
+                        const w = Math.max(1, Math.floor(entry.contentRect.width));
+                        const h = Math.max(1, Math.floor(entry.contentRect.height));
+                        camera.aspect = w / h;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(w, h);
+                        if (isReducedMotion) {
+                            updateThreeScenes(0, true);
+                        }
+                    }
+                });
+                ro.observe(container);
+
+                heroThree = {
+                    scene,
+                    camera,
+                    renderer,
+                    waterGeo,
+                    waterBasePositions,
+                    nearGroup,
+                    farGroup,
+                    brassRingMesh,
+                    pearlSphereMesh,
+                    farCrown
+                };
+            } catch (err) {
+                // إبقاء المشهد آمناً دون توقف باقي الواجهة
+            }
+        }
+
+        function initPavilionThreeScene() {
+            const container = document.getElementById('pavilion-three-stage');
+            if (!container || typeof THREE === 'undefined') return;
+
+            try {
+                const scene = new THREE.Scene();
+                const width = container.clientWidth || 600;
+                const height = container.clientHeight || 380;
+                const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+                camera.position.set(0, 3.2, 7.2);
+                camera.lookAt(0, 0.2, 0);
+
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                renderer.setSize(width, height);
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+                container.innerHTML = '';
+                container.appendChild(renderer.domElement);
+
+                scene.add(new THREE.AmbientLight(0x9FB1BE, 0.8));
+                const dirLight = new THREE.DirectionalLight(0xC88A55, 2.0);
+                dirLight.position.set(4, 7, 4);
+                scene.add(dirLight);
+                const foamPt = new THREE.PointLight(0x4A6B7C, 2.2, 14);
+                foamPt.position.set(-3, 2, 2);
+                scene.add(foamPt);
+
+                const deckMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(7.6, 0.25, 5.2),
+                    new THREE.MeshStandardMaterial({ color: 0x152232, roughness: 0.75, metalness: 0.2 })
+                );
+                deckMesh.position.y = -0.35;
+                scene.add(deckMesh);
+
+                // ١. شرفة الحوض العاكس (يسار)
+                const zonePool = new THREE.Mesh(
+                    new THREE.BoxGeometry(2.1, 0.16, 3.6),
+                    new THREE.MeshStandardMaterial({ color: 0x4A6B7C, roughness: 0.18, metalness: 0.75 })
+                );
+                zonePool.position.set(-2.2, -0.15, 0.2);
+                scene.add(zonePool);
+
+                // ٢. قاعة الحجر المنحوت (وسط)
+                const zoneStone = new THREE.Mesh(
+                    new THREE.BoxGeometry(2.0, 1.5, 2.2),
+                    new THREE.MeshStandardMaterial({ color: 0xF5EFE6, roughness: 0.5, metalness: 0.08 })
+                );
+                zoneStone.position.set(0.1, 0.5, -0.4);
+                scene.add(zoneStone);
+
+                // ٣. طاولة الشيف المفتوحة وموقد الساج (يمين)
+                const zoneHearth = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.95, 1.1, 1.25, 24),
+                    new THREE.MeshStandardMaterial({ color: 0xC88A55, roughness: 0.3, metalness: 0.8 })
+                );
+                zoneHearth.position.set(2.35, 0.4, 0.6);
+                scene.add(zoneHearth);
+
+                const ro = new ResizeObserver((entries) => {
+                    for (const entry of entries) {
+                        const w = Math.max(1, Math.floor(entry.contentRect.width));
+                        const h = Math.max(1, Math.floor(entry.contentRect.height));
+                        camera.aspect = w / h;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(w, h);
+                        if (isReducedMotion) {
+                            updateThreeScenes(0, true);
+                        }
+                    }
+                });
+                ro.observe(container);
+
+                pavilionThree = { scene, camera, renderer, zonePool, zoneStone, zoneHearth };
+            } catch (err) {
+                // تجاهل آمن عند غياب WebGL
+            }
+        }
+
+        function focusPavilionZone(zoneName, btnEl) {
+            document.querySelectorAll('.pavilion-zone-btn').forEach(btn => {
+                if (btn.dataset.zone === zoneName) {
+                    btn.className = 'pavilion-zone-btn text-right px-4 py-3 rounded-xl bg-copper text-abyss font-bold text-xs sm:text-sm transition-colors';
+                } else {
+                    btn.className = 'pavilion-zone-btn text-right px-4 py-3 rounded-xl bg-abyss/80 text-pearl hover:border-copper border border-pearl/15 font-medium text-xs sm:text-sm transition-colors';
+                }
+            });
+
+            const labelEl = document.getElementById('pavilion-active-label');
+            if (labelEl) labelEl.textContent = `التركيز الحالي: ${zoneName}`;
+
+            if (zoneName === 'شرفة الحوض العاكس') {
+                pavilionFocusTarget.set(-1.8, 0.0, 0.4);
+            } else if (zoneName === 'قاعة الحجر المنحوت') {
+                pavilionFocusTarget.set(0.1, 0.45, -0.2);
+            } else {
+                pavilionFocusTarget.set(2.0, 0.35, 0.6);
+            }
+
+            // مزامنة اختيار المنطقة مع نموذج الحجز تلقائياً
+            selectSeating(zoneName);
+            if (isReducedMotion) {
+                currentPavilionCamTarget.copy(pavilionFocusTarget);
+                updateThreeScenes(0, true);
+            }
+        }
+
+        function updateThreeScenes(dt, staticSnapshot = false) {
+            if (!staticSnapshot) {
+                threeElapsed += dt;
+            }
+
+            const ox = round3(currentOrbit.x);
+            const oy = round3(currentOrbit.y);
+
+            if (heroThree) {
+                const { camera, renderer, waterGeo, waterBasePositions, nearGroup, farGroup, brassRingMesh, pearlSphereMesh, farCrown } = heroThree;
+
+                // إزاحة الكاميرا ضمن النطاق (-26 / +16 مقياس معماري) مع حمل 42% على lookAt
+                const camX = round3(ox * 1.35);
+                const camY = round3(1.4 - oy * 0.85);
+                const camZ = round3(7.6 + oy * 0.45);
+                camera.position.set(camX, camY, camZ);
+
+                const lookX = round3(camX * 0.42);
+                const lookY = round3(0.2 + (-oy * 0.35) * 0.42);
+                const lookZ = round3(0);
+                camera.lookAt(lookX, lookY, lookZ);
+
+                // دوران متعاكس بين المجسمات القريبة (Near) والبعيدة (Far)
+                nearGroup.rotation.y = round3(ox * 0.38 + (staticSnapshot ? 0 : Math.sin(threeElapsed * 0.5) * 0.06));
+                nearGroup.rotation.x = round3(-oy * 0.22);
+
+                farGroup.rotation.y = round3(-ox * 0.24);
+                farGroup.rotation.x = round3(oy * 0.14);
+
+                brassRingMesh.rotation.z = round3(staticSnapshot ? 0.25 : threeElapsed * 0.22 + ox * 0.4);
+                brassRingMesh.rotation.y = round3(ox * 0.5);
+
+                pearlSphereMesh.position.y = round3(0.4 + (staticSnapshot ? 0.05 : Math.sin(threeElapsed * 1.4) * 0.12));
+                farCrown.rotation.y = round3(staticSnapshot ? 0.4 : threeElapsed * 0.45);
+
+                // تموج سطح الحوض العاكس
+                const posAttr = waterGeo.attributes.position;
+                for (let i = 0; i < posAttr.count; i++) {
+                    const bx = waterBasePositions[i * 3];
+                    const bz = waterBasePositions[i * 3 + 2];
+                    const ripple = staticSnapshot
+                        ? Math.sin(bx * 1.4 + bz * 1.2) * 0.04
+                        : Math.sin(bx * 1.35 + threeElapsed * 1.8) * 0.065 + Math.cos(bz * 1.6 - threeElapsed * 1.4) * 0.05;
+                    posAttr.array[i * 3 + 1] = ripple;
+                }
+                posAttr.needsUpdate = true;
+
+                renderer.render(heroThree.scene, camera);
+            }
+
+            if (pavilionThree) {
+                const { camera, renderer, zoneHearth } = pavilionThree;
+                if (staticSnapshot) {
+                    currentPavilionCamTarget.copy(pavilionFocusTarget);
+                } else {
+                    currentPavilionCamTarget.lerp(pavilionFocusTarget, 0.08);
+                }
+                camera.position.x = round3(currentPavilionCamTarget.x * 0.65 + ox * 1.4);
+                camera.position.y = round3(3.1 - oy * 0.6);
+                camera.lookAt(currentPavilionCamTarget.x, currentPavilionCamTarget.y, currentPavilionCamTarget.z);
+
+                if (zoneHearth && !staticSnapshot) {
+                    zoneHearth.rotation.y = round3(threeElapsed * 0.25);
+                }
+
+                renderer.render(pavilionThree.scene, camera);
+            }
         }
 
         /* ==========================================================================
@@ -1134,13 +1491,16 @@
             const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
             lastFrameTime = now;
 
-            if (isHeroVisible && !document.hidden) {
+            if (!document.hidden) {
                 if (!isReducedMotion) {
                     const alpha = 1 - Math.pow(1 - 0.055, dt * 60);
                     currentOrbit.x += (targetOrbit.x - currentOrbit.x) * alpha;
                     currentOrbit.y += (targetOrbit.y - currentOrbit.y) * alpha;
                     applyOrbitTransforms();
-                    renderHeroCanvas(dt, false);
+                    if (isHeroVisible) {
+                        renderHeroCanvas(dt, false);
+                    }
+                    updateThreeScenes(dt, false);
                 }
             }
 
@@ -1573,6 +1933,27 @@
                     ease: 'power2.out'
                 });
             }
+
+            // تفعيل الإمالة ثلاثية الأبعاد التفاعلية على بطاقات الأطباق
+            bindMenuCardsTilt();
+        }
+
+        function bindMenuCardsTilt() {
+            if (!supportsFinePointer) return;
+            document.querySelectorAll('.menu-item-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    if (isReducedMotion) return;
+                    const rect = card.getBoundingClientRect();
+                    const px = (e.clientX - rect.left) / rect.width;
+                    const py = (e.clientY - rect.top) / rect.height;
+                    const rotY = round3((px - 0.5) * 8);
+                    const rotX = round3((0.5 - py) * 8);
+                    card.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(6px)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+                });
+            });
         }
 
         /* ==========================================================================
@@ -1954,6 +2335,8 @@
             renderTimeSlots();
             updatePreview();
             resizeHeroCanvas();
+            initHeroThreeScene();
+            initPavilionThreeScene();
 
             // ضبط موقع كبسولة الفلتر الأولية
             const initialDietBtn = document.querySelector('.diet-btn[data-diet="all"]');
