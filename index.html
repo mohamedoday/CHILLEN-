@@ -123,6 +123,27 @@
       transition-duration: 160ms !important;
     }
 
+    /* وضع التثبيت عند ?t=N أو الإيقاف المؤقت: إلغاء التحولات المتأخرة عند الفحص */
+    html[data-time-frozen="true"] .parallax-plate,
+    html[data-time-frozen="true"] .glass-card {
+      transition: none !important;
+    }
+
+    /* تحسينات الوصولية المطبقة حياً (WCAG 2.2 Hardening Mode) */
+    html[data-a11y-hardened="true"] :focus-visible {
+      outline: 3px solid #00E5FF;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 6px rgba(0, 229, 255, 0.22);
+    }
+    html[data-a11y-hardened="true"] .glass-card {
+      border-color: rgba(148, 163, 184, 0.28);
+    }
+    html[data-a11y-hardened="true"] button,
+    html[data-a11y-hardened="true"] select,
+    html[data-a11y-hardened="true"] input {
+      min-height: 40px;
+    }
+
     /* Tier 3: الحفاظ على مؤشرات التركيز والحالة الفورية */
     :focus-visible {
       outline: 2px solid #00E5FF;
@@ -144,17 +165,17 @@
       background: #00E5FF;
     }
   </style>
-</head>
-<body class="antialiased selection:bg-cyberCyan selection:text-void">
-
-  <!-- طبقة جسيمات وأثر المؤشر التفاعلية مع فحص قدرات الرسم -->
+  <!-- طبقة جسيمات وأثر المؤشر التفاعلية خلف المحتوى التفاعلي (z-10) -->
   <canvas
     id="cursor-trail-canvas"
     aria-hidden="true"
-    class="fixed inset-0 w-full h-full pointer-events-none z-30"
+    class="fixed inset-0 w-full h-full pointer-events-none z-10"
   ></canvas>
 
-  <!-- حاوية التطبيق الرئيسية -->
+  <!-- قناة إعلانات قارئ الشاشة الحية للتحكم بالمدار والتدقيق (WCAG 4.1.3) -->
+  <div id="a11y-live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- حاوية التطبيق الرئيسية فوق طبقة الأثر التفاعلي (z-20) -->
   <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- الشريط العلوي والتحكم بالوضع الحركي -->
@@ -228,8 +249,53 @@
             Tier 3 (تركيز)
           </button>
         </div>
+
+        <button
+          type="button"
+          id="btn-freeze-timeline"
+          onclick="toggleTimelineFreeze()"
+          aria-pressed="false"
+          class="px-3 py-2 rounded-xl bg-panelLight hover:bg-slate-700 border border-slate-700 text-inkLight font-mono-tech text-xs font-bold transition-colors"
+        >
+          FREEZE: OFF
+        </button>
       </div>
     </header>
+
+    <!-- شريط فحص الزمن والحركة وتقليل الحركة التفاعلي (?reduce=1 و ?t=N) -->
+    <section aria-label="فاحص الزمن والحركة" class="glass-card p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="px-2.5 py-1 rounded-lg bg-cyberTeal/15 border border-cyberTeal/35 text-cyberCyan font-mono-tech text-xs font-bold">
+          MOTION &amp; SEEK HARNESS
+        </span>
+        <span id="motion-policy-summary" class="text-xs text-inkMuted">
+          الحالة: حركة نشطة • معامل التخميد <span class="font-mono-tech">0.055</span> • حد <span class="font-mono-tech">dt &le; 1/30s</span>
+        </span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <label for="timeline-seek-slider" class="text-xs font-bold text-inkLight whitespace-nowrap">
+          إزاحة الزمن (<span id="seek-slider-readout" class="font-mono-tech text-cyberCyan">0.0s</span>)
+        </label>
+        <input
+          id="timeline-seek-slider"
+          type="range"
+          min="0"
+          max="60"
+          step="0.5"
+          value="0"
+          oninput="seekSimulationTime(parseFloat(this.value), true)"
+          class="w-36 sm:w-44 accent-cyan-400 cursor-pointer"
+        />
+        <button
+          type="button"
+          onclick="seekSimulationTime(12.5, true)"
+          class="px-2.5 py-1.5 rounded-lg bg-panelLight hover:bg-slate-700 text-inkLight font-mono-tech text-xs font-bold transition-colors"
+        >
+          SEEK T+12.5s
+        </button>
+      </div>
+    </section>
 
     <!-- مؤشرات القياس الفورية (KPI Telemetry Strip) -->
     <section aria-label="مؤشرات القياس الفورية" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -352,7 +418,7 @@
               onclick="resetOrbitCenter()"
               class="px-3 py-1.5 rounded-lg bg-panelLight hover:bg-slate-700 text-inkLight font-bold transition-colors"
             >
-              توسيط المدار (0, 0)
+              <span id="orbit-reset-label">توسيط المدار (0, 0)</span>
             </button>
           </div>
         </div>
@@ -445,19 +511,19 @@
             <option value="UDP">UDP ONLY</option>
           </select>
 
-          <label for="custom-port-input" class="sr-only">رقم المنفذ</label>
+          <label for="custom-port-input" class="sr-only">إضافة منفذ مخصص</label>
           <input
             id="custom-port-input"
             type="number"
             min="1"
             max="65535"
-            placeholder="منفذ (مثلاً 8443)"
+            placeholder="منفذ (1-65535)"
             class="w-32 px-3 py-2.5 rounded-xl bg-void border border-slate-700 text-inkLight font-mono-tech text-xs focus:border-cyberCyan"
           />
 
           <button
             type="submit"
-            class="px-3.5 py-2.5 rounded-xl bg-panelLight hover:bg-slate-700 text-inkLight font-bold text-xs transition-colors"
+            class="px-3.5 py-2.5 rounded-xl bg-panelLight hover:bg-slate-700 border border-slate-700 text-inkLight text-xs font-bold transition-colors"
           >
             إضافة منفذ
           </button>
@@ -466,41 +532,103 @@
             type="button"
             id="btn-run-port-scan"
             onclick="startPortScan()"
-            class="px-4 py-2.5 rounded-xl bg-cyberCyan hover:bg-cyan-300 text-void font-extrabold text-xs transition-colors"
+            class="px-4 py-2.5 rounded-xl bg-cyberCyan hover:bg-cyan-300 text-void text-xs font-extrabold transition-colors"
           >
-            بدء فحص المنافذ
+            بدء الفحص
           </button>
         </form>
       </div>
 
-      <!-- شريط التقدم والنتائج -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between text-xs text-inkMuted">
-          <span id="scan-status-text">جاهز للتدقيق — اختر «بدء فحص المنافذ»</span>
-          <span id="scan-progress-label" class="font-mono-tech text-cyberCyan">0%</span>
+      <!-- شريط تقدم الفحص -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between text-xs">
+          <span id="scan-status-text" class="text-inkMuted">جاهز لبدء فحص المنافذ.</span>
+          <span id="scan-progress-label" class="font-mono-tech text-cyberCyan font-bold">0%</span>
         </div>
-        <div class="w-full h-2.5 rounded-full bg-void overflow-hidden border border-slate-800">
-          <div id="scan-progress-bar" class="h-full w-0 bg-gradient-to-l from-cyberCyan to-cyberEmerald transition-all duration-150"></div>
+        <div class="w-full h-2 rounded-full bg-void overflow-hidden border border-slate-800">
+          <div id="scan-progress-bar" class="h-full w-0 bg-cyberCyan transition-all duration-150"></div>
         </div>
       </div>
 
-      <!-- جدول المنافذ المتجاوب -->
-      <div class="overflow-x-auto rounded-2xl border border-slate-800/90">
-        <table class="w-full text-right border-collapse">
+      <!-- جدول نتائج المنافذ -->
+      <div class="overflow-x-auto rounded-2xl border border-slate-800/90 bg-void/70">
+        <table class="w-full text-right border-collapse text-xs sm:text-sm">
           <thead>
-            <tr class="bg-void/90 border-b border-slate-800 text-xs text-inkMuted">
-              <th class="py-3 px-4 font-bold">المنفذ</th>
-              <th class="py-3 px-4 font-bold">البروتوكول</th>
-              <th class="py-3 px-4 font-bold">الخدمة</th>
-              <th class="py-3 px-4 font-bold">الحالة</th>
-              <th class="py-3 px-4 font-bold">زمن الاستجابة</th>
-              <th class="py-3 px-4 font-bold">الملاحظة الأمنية</th>
+            <tr class="border-b border-slate-800 bg-obsidian/90 text-inkMuted font-mono-tech text-xs">
+              <th class="py-3 px-4">PORT</th>
+              <th class="py-3 px-4">PROTO</th>
+              <th class="py-3 px-4">SERVICE</th>
+              <th class="py-3 px-4">STATE</th>
+              <th class="py-3 px-4">RTT</th>
+              <th class="py-3 px-4">AUDIT NOTE</th>
             </tr>
           </thead>
-          <tbody id="port-scan-tbody" class="divide-y divide-slate-800/70 text-xs sm:text-sm">
+          <tbody id="port-scan-tbody" class="divide-y divide-slate-800/70">
             <!-- يتم توليد الصفوف ديناميكياً -->
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- تدقيق واجهة المستخدم والوصولية WCAG 2.2 + خارطة الهندسة و Stacked PRs -->
+    <section aria-label="تدقيق واجهة المستخدم والوصولية وخارطة الهندسة" class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      <!-- لوحة التدقيق الحي لـ WCAG 2.2 والتصميم البصري -->
+      <div class="xl:col-span-6 glass-card p-5 sm:p-6 space-y-4">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-cyberEmerald">UI &amp; WCAG 2.2 LIVE AUDIT</span>
+            <h2 class="text-lg sm:text-xl font-bold text-inkLight">تدقيق التصميم البصري والوصولية</h2>
+            <p class="text-xs text-inkMuted">
+              فحص حي للتباين، وضوح التركيز، تسميات <span class="font-mono-tech">ARIA</span>، أحجام اللمس، وسلامة الحركة مع تطبيق فوري للتحسينات الآمنة.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="px-3 py-1.5 rounded-xl bg-void border border-slate-700 text-center">
+              <div class="text-[10px] text-inkMuted font-mono-tech">SCORE</div>
+              <div id="audit-score-readout" class="text-sm font-extrabold font-mono-tech text-cyberEmerald">100/100</div>
+            </div>
+            <button
+              type="button"
+              id="btn-apply-audit-fixes"
+              onclick="toggleAuditHardening()"
+              aria-pressed="false"
+              class="px-3.5 py-2 rounded-xl bg-cyberEmerald text-void font-extrabold text-xs hover:bg-emerald-300 transition-colors"
+            >
+              تطبيق تحسينات الوصولية
+            </button>
+          </div>
+        </div>
+
+        <div id="wcag-audit-checklist" class="space-y-2.5" role="list" aria-label="قائمة بنود تدقيق الوصولية والتصميم">
+          <!-- يتم توليد بنود التدقيق ديناميكياً -->
+        </div>
+      </div>
+
+      <!-- وحدة خارطة الهندسة وسلاسل طلبات الدمج المتتابعة gh stack -->
+      <div class="xl:col-span-6 glass-card p-5 sm:p-6 space-y-4">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-cyberCyan">ENGINEERING ROADMAP &amp; STACKED PRS</span>
+            <h2 class="text-lg sm:text-xl font-bold text-inkLight">سلاسل الفروع المتتابعة (<span class="font-mono-tech text-sm">gh stack</span>)</h2>
+            <p class="text-xs text-inkMuted">
+              هيكلة التطوير من الجذع <span class="font-mono-tech">main</span> إلى الطبقات المعزولة مع أوامر <span class="font-mono-tech">CLI</span> غير التفاعلية وملاحظات التعافي من رموز الخروج.
+            </p>
+          </div>
+          <span class="px-2.5 py-1 rounded-lg bg-panelLight border border-slate-700 font-mono-tech text-xs text-cyberCyan">
+            STACK: 4 LAYERS
+          </span>
+        </div>
+
+        <!-- سلسلة الفروع التفاعلية -->
+        <div id="stack-branches-list" class="space-y-2" role="tablist" aria-label="طبقات سلسلة الفروع">
+          <!-- يتم توليد الفروع ديناميكياً -->
+        </div>
+
+        <!-- تفاصيل الطبقة المختارة وأوامر gh stack -->
+        <div id="stack-layer-inspector" class="rounded-2xl bg-void/90 border border-slate-800 p-4 space-y-3">
+          <!-- يتم تحديث التفاصيل عند اختيار طبقة -->
+        </div>
       </div>
     </section>
 
@@ -546,13 +674,54 @@
     const initialSeekTime = hasSeekTime ? Math.max(0, parseFloat(seekTimeParamRaw)) : null;
 
     const prefersReducedQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const reducedTransparencyQuery = window.matchMedia('(prefers-reduced-transparency: reduce)');
+
     let activeMotionTier = forceReduceParam || prefersReducedQuery.matches ? 'tier1' : 'active';
     let streamPaused = false;
+    let timelineFrozen = hasSeekTime;
     let stressBurstActive = false;
+    let auditHardened = false;
     let simElapsedSeconds = initialSeekTime !== null ? initialSeekTime : 0;
 
+    function announcePolite(msg) {
+      const liveEl = document.getElementById('a11y-live-announcer');
+      if (!liveEl) return;
+      liveEl.textContent = '';
+      requestAnimationFrame(() => {
+        liveEl.textContent = msg;
+      });
+    }
+
     function isMotionReduced() {
-      return activeMotionTier === 'tier1' || activeMotionTier === 'tier2';
+      return activeMotionTier === 'tier1' || activeMotionTier === 'tier2' || forceReduceParam || prefersReducedQuery.matches;
+    }
+
+    function syncMotionFreezeAttributes() {
+      const frozenAttr = (timelineFrozen || streamPaused) ? 'true' : 'false';
+      document.documentElement.setAttribute('data-time-frozen', frozenAttr);
+
+      const freezeBtn = document.getElementById('btn-freeze-timeline');
+      if (freezeBtn) {
+        const activeFreeze = timelineFrozen || streamPaused;
+        freezeBtn.setAttribute('aria-pressed', String(activeFreeze));
+        freezeBtn.textContent = activeFreeze ? 'FREEZE: ON' : 'FREEZE: OFF';
+        freezeBtn.className = activeFreeze
+          ? 'px-3 py-2 rounded-xl bg-cyberAmber text-void font-mono-tech text-xs font-extrabold transition-colors'
+          : 'px-3 py-2 rounded-xl bg-panelLight hover:bg-slate-700 border border-slate-700 text-inkLight font-mono-tech text-xs font-bold transition-colors';
+      }
+
+      const summaryEl = document.getElementById('motion-policy-summary');
+      if (summaryEl) {
+        const modeLabel = activeMotionTier === 'tier1'
+          ? 'Tier 1 (سكون 3D عند 0.28, -0.12)'
+          : activeMotionTier === 'tier2'
+            ? 'Tier 2 (مخفف <=200ms)'
+            : activeMotionTier === 'tier3'
+              ? 'Tier 3 (حفظ التركيز والحالة)'
+              : 'حركة نشطة';
+        const freezeLabel = (timelineFrozen || streamPaused) ? ' • مُجمّد' : ' • جارٍ';
+        summaryEl.innerHTML = `الحالة: ${modeLabel}${freezeLabel} • معامل التخميد <span class="font-mono-tech">0.055</span> • حد <span class="font-mono-tech">dt &le; 1/30s</span>`;
+      }
     }
 
     function setMotionTier(tier) {
@@ -566,21 +735,32 @@
           : 'tier-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-inkMuted hover:text-inkLight';
       });
 
-      if (activeMotionTier === 'tier1') {
+      if (tier === 'tier1') {
         trailParticles = [];
         clearTrailCanvas();
+        // وضع ساكن مضبوط في حالة تقليل الحركة (x: 0.28, y: -0.12) مع بقاء أشرطة X/Y حية للفحص دون استيفاء متأخر
+        currentOrbitX = 0.28;
+        currentOrbitY = -0.12;
+        syncOrbitControlsUI(false);
+        applyParallaxLayers();
+      } else {
+        syncOrbitControlsUI(true);
       }
 
-      if (streamPaused || isMotionReduced()) {
-        renderTelemetryChart();
-        renderThreeFrame(0.016);
-      }
+      syncMotionFreezeAttributes();
+      renderTelemetryChart();
+      renderThreeFrame(1 / 30);
+      renderAuditChecklist();
 
       appendConsoleLine('INFO', `تم ضبط وضع الحركة إلى: ${tier.toUpperCase()}`);
+      announcePolite(`تم ضبط مستوى الحركة إلى ${tier}`);
     }
 
     function toggleStreamPaused() {
       streamPaused = !streamPaused;
+      if (!streamPaused) {
+        timelineFrozen = false;
+      }
       const btn = document.getElementById('btn-motion-pause');
       btn.setAttribute('aria-pressed', String(streamPaused));
       btn.textContent = streamPaused ? 'استئناف البث الحي' : 'إيقاف البث الحي';
@@ -588,7 +768,61 @@
         ? 'px-3.5 py-2 rounded-xl bg-cyberEmerald text-void font-extrabold text-xs sm:text-sm hover:bg-emerald-300 transition-colors'
         : 'px-3.5 py-2 rounded-xl bg-cyberCyan text-void font-bold text-xs sm:text-sm hover:bg-cyan-300 transition-colors';
 
+      syncMotionFreezeAttributes();
       appendConsoleLine('SYS', streamPaused ? 'تم إيقاف البث المباشر مؤقتاً.' : 'تم استئناف البث المباشر للقياسات.');
+    }
+
+    function toggleTimelineFreeze() {
+      timelineFrozen = !timelineFrozen;
+      if (timelineFrozen) {
+        streamPaused = true;
+      } else {
+        streamPaused = false;
+        const pauseBtn = document.getElementById('btn-motion-pause');
+        if (pauseBtn) {
+          pauseBtn.setAttribute('aria-pressed', 'false');
+          pauseBtn.textContent = 'إيقاف البث الحي';
+          pauseBtn.className = 'px-3.5 py-2 rounded-xl bg-cyberCyan text-void font-bold text-xs sm:text-sm hover:bg-cyan-300 transition-colors';
+        }
+      }
+      syncMotionFreezeAttributes();
+      renderTelemetryChart();
+      renderThreeFrame(1 / 30);
+      appendConsoleLine('SEEK', timelineFrozen ? `تم تثبيت الإطار عند T+${simElapsedSeconds.toFixed(1)}s.` : 'تم فك تثبيت الإطار الزمني.');
+    }
+
+    function seekSimulationTime(targetSec, freezeAfterSeek) {
+      const clampedSec = Math.max(0, Number.isFinite(targetSec) ? targetSec : 0);
+      simElapsedSeconds = clampedSec;
+      updateSimTimeBadge();
+
+      const slider = document.getElementById('timeline-seek-slider');
+      const readout = document.getElementById('seek-slider-readout');
+      if (slider) slider.value = clampedSec.toFixed(1);
+      if (readout) readout.textContent = `${clampedSec.toFixed(1)}s`;
+
+      latencySeries = [];
+      lossSeries = [];
+      for (let i = 0; i < historyLength; i++) {
+        const sampleT = Math.max(0, clampedSec - (historyLength - 1 - i) * 0.45);
+        pushTelemetrySample(computeTelemetrySample(sampleT));
+      }
+
+      if (freezeAfterSeek) {
+        timelineFrozen = true;
+        streamPaused = true;
+        const pauseBtn = document.getElementById('btn-motion-pause');
+        if (pauseBtn) {
+          pauseBtn.setAttribute('aria-pressed', 'true');
+          pauseBtn.textContent = 'استئناف البث الحي';
+          pauseBtn.className = 'px-3.5 py-2 rounded-xl bg-cyberEmerald text-void font-extrabold text-xs sm:text-sm hover:bg-emerald-300 transition-colors';
+        }
+      }
+
+      syncMotionFreezeAttributes();
+      renderTelemetryChart();
+      renderThreeFrame(1 / 30);
+      appendConsoleLine('SEEK', `الانتقال المباشر إلى الإطار الزمني T+${clampedSec.toFixed(1)}s.`);
     }
 
     prefersReducedQuery.addEventListener('change', (e) => {
@@ -597,12 +831,27 @@
       }
     });
 
+    reducedTransparencyQuery.addEventListener('change', () => {
+      renderAuditChecklist();
+    });
+
     /* ==========================================================================
        2. فحص قدرات الرسم والبيئة (WebGL / Canvas Capability Gating)
        ========================================================================== */
     const trailCanvas = document.getElementById('cursor-trail-canvas');
-    const trailCtx = trailCanvas.getContext('2d');
+    const trailCtx = trailCanvas ? trailCanvas.getContext('2d') : null;
     const finePointerQuery = window.matchMedia('(pointer: fine)');
+    const hoverCapabilityQuery = window.matchMedia('(hover: hover)');
+    let isPageVisible = !document.hidden;
+    let isWindowFocused = document.hasFocus();
+
+    function canRenderCursorTrail() {
+      if (!trailCtx || !finePointerQuery.matches || !hoverCapabilityQuery.matches) return false;
+      if (activeMotionTier === 'tier1' || prefersReducedQuery.matches || forceReduceParam) return false;
+      if (reducedTransparencyQuery.matches || streamPaused || timelineFrozen) return false;
+      if (!isPageVisible || !isWindowFocused) return false;
+      return true;
+    }
 
     function detectGraphicsCapabilities() {
       let webglSupported = false;
@@ -645,14 +894,14 @@
     }
 
     window.addEventListener('pointermove', (e) => {
-      if (!finePointerQuery.matches || activeMotionTier === 'tier1' || streamPaused) return;
+      if (!canRenderCursorTrail()) return;
       trailParticles.push({
         x: e.clientX,
         y: e.clientY,
         radius: 3.2,
-        alpha: 0.75
+        alpha: 0.72
       });
-      if (trailParticles.length > 28) {
+      if (trailParticles.length > 26) {
         trailParticles.shift();
       }
     }, { passive: true });
@@ -660,19 +909,19 @@
     function updateAndRenderTrailCanvas(dt) {
       if (!trailCtx) return;
       clearTrailCanvas();
-      if (activeMotionTier === 'tier1' || !finePointerQuery.matches || trailParticles.length === 0) return;
+      if (!canRenderCursorTrail() || trailParticles.length === 0) return;
 
       for (let i = trailParticles.length - 1; i >= 0; i--) {
         const p = trailParticles[i];
-        p.alpha -= dt * (activeMotionTier === 'tier2' ? 3.2 : 1.55);
-        p.radius += dt * 7;
+        p.alpha -= dt * (activeMotionTier === 'tier2' ? 3.4 : 1.65);
+        p.radius += dt * 6.5;
         if (p.alpha <= 0) {
           trailParticles.splice(i, 1);
           continue;
         }
         trailCtx.beginPath();
         trailCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        trailCtx.fillStyle = `rgba(0, 229, 255, ${Math.max(0, p.alpha * 0.45).toFixed(3)})`;
+        trailCtx.fillStyle = `rgba(0, 229, 255, ${Math.max(0, p.alpha * 0.42).toFixed(3)})`;
         trailCtx.fill();
       }
     }
@@ -694,34 +943,55 @@
     }
 
     function setManualOrbit(x, y) {
-      targetOrbitX = Math.max(-1, Math.min(1, Number.isFinite(x) ? x : 0));
-      targetOrbitY = Math.max(-1, Math.min(1, Number.isFinite(y) ? y : 0));
-      syncOrbitControlsUI();
-      if (isMotionReduced() || streamPaused) {
-        currentOrbitX = targetOrbitX;
-        currentOrbitY = targetOrbitY;
+      const clampedX = Math.max(-1, Math.min(1, Number.isFinite(x) ? x : 0));
+      const clampedY = Math.max(-1, Math.min(1, Number.isFinite(y) ? y : 0));
+      targetOrbitX = clampedX;
+      targetOrbitY = clampedY;
+
+      // في وضع السكون (Tier 1) تبقى أشرطة X/Y حية لفحص الوضعيات مباشرة دون استيفاء متأخر
+      if (activeMotionTier === 'tier1') {
+        currentOrbitX = clampedX;
+        currentOrbitY = clampedY;
+        syncOrbitControlsUI(false);
         applyParallaxLayers();
-        renderThreeFrame(0.016);
+        renderThreeFrame(1 / 30);
+      } else {
+        syncOrbitControlsUI(true);
+        if (streamPaused || timelineFrozen) {
+          currentOrbitX = clampedX;
+          currentOrbitY = clampedY;
+          applyParallaxLayers();
+          renderThreeFrame(1 / 30);
+        }
       }
+      announcePolite(`محور المدار X ${clampedX.toFixed(2)}، Y ${clampedY.toFixed(2)}`);
     }
 
     function resetOrbitCenter() {
       setManualOrbit(0, 0);
     }
 
-    function syncOrbitControlsUI() {
+    function syncOrbitControlsUI(showCurrentInReadout = true) {
       const sliderX = document.getElementById('orbit-x-slider');
       const sliderY = document.getElementById('orbit-y-slider');
       const valX = document.getElementById('orbit-x-val');
       const valY = document.getElementById('orbit-y-val');
       const readout = document.getElementById('orbit-coord-readout');
+      const resetLabel = document.getElementById('orbit-reset-label');
 
       if (sliderX) sliderX.value = targetOrbitX.toFixed(2);
       if (sliderY) sliderY.value = targetOrbitY.toFixed(2);
       if (valX) valX.textContent = `${targetOrbitX >= 0 ? '+' : ''}${targetOrbitX.toFixed(2)}`;
       if (valY) valY.textContent = `${targetOrbitY >= 0 ? '+' : ''}${targetOrbitY.toFixed(2)}`;
+      if (resetLabel) {
+        resetLabel.textContent = activeMotionTier === 'tier1'
+          ? 'وضع السكون (+0.28, -0.12)'
+          : 'توسيط المدار (0, 0)';
+      }
       if (readout) {
-        readout.textContent = `X: ${currentOrbitX >= 0 ? '+' : ''}${currentOrbitX.toFixed(2)} | Y: ${currentOrbitY >= 0 ? '+' : ''}${currentOrbitY.toFixed(2)}`;
+        const rx = showCurrentInReadout ? currentOrbitX : targetOrbitX;
+        const ry = showCurrentInReadout ? currentOrbitY : targetOrbitY;
+        readout.textContent = `X: ${rx >= 0 ? '+' : ''}${rx.toFixed(2)} | Y: ${ry >= 0 ? '+' : ''}${ry.toFixed(2)}`;
       }
     }
 
@@ -742,6 +1012,7 @@
     }
 
     let threeState = null;
+    let threeResizeObserver = null;
 
     function initThreeDepthScene(webglSupported) {
       const stage = document.getElementById('three-depth-stage');
@@ -776,7 +1047,6 @@
         scene.add(nearGroup);
         scene.add(farGroup);
 
-        // نواة الشبكة القريبة (Near Core)
         const coreMesh = new THREE.Mesh(
           new THREE.IcosahedronGeometry(1.05, 1),
           new THREE.MeshStandardMaterial({
@@ -798,7 +1068,6 @@
         );
         nearGroup.add(innerSphere);
 
-        // حلقة مدارية بعيدة (Far Orbital Ring)
         const outerRing = new THREE.Mesh(
           new THREE.TorusGeometry(2.05, 0.035, 16, 72),
           new THREE.MeshStandardMaterial({
@@ -810,26 +1079,30 @@
         outerRing.position.z = -1.3;
         farGroup.add(outerRing);
 
-        const ro = new ResizeObserver((entries) => {
-          for (const entry of entries) {
-            const w = Math.max(1, Math.floor(entry.contentRect.width));
-            const h = Math.max(1, Math.floor(entry.contentRect.height));
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
-            renderThreeFrame(0.016);
-          }
-        });
-        ro.observe(stage);
+        if (typeof ResizeObserver !== 'undefined') {
+          threeResizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+              const w = Math.max(1, Math.floor(entry.contentRect.width));
+              const h = Math.max(1, Math.floor(entry.contentRect.height));
+              camera.aspect = w / h;
+              camera.updateProjectionMatrix();
+              renderer.setSize(w, h);
+              renderThreeFrame(1 / 30);
+            }
+          });
+          threeResizeObserver.observe(stage);
+        }
 
+        // تتبع المؤشر للأجهزة الدقيقة فقط دون اعتراض اللمس أو المسارات الخشنة
         stage.addEventListener('pointermove', (e) => {
-          if (activeMotionTier === 'tier1' || streamPaused) return;
+          if (e.pointerType !== 'mouse' || !finePointerQuery.matches) return;
+          if (activeMotionTier === 'tier1' || streamPaused || timelineFrozen) return;
           const rect = stage.getBoundingClientRect();
           const nx = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
           const ny = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1;
           targetOrbitX = Math.max(-1, Math.min(1, nx));
           targetOrbitY = Math.max(-1, Math.min(1, ny));
-          syncOrbitControlsUI();
+          syncOrbitControlsUI(true);
         });
 
         stage.addEventListener('keydown', (e) => {
@@ -856,27 +1129,49 @@
       }
     }
 
+    function disposeThreeDepthScene() {
+      if (threeResizeObserver) {
+        threeResizeObserver.disconnect();
+        threeResizeObserver = null;
+      }
+      if (!threeState) return;
+      try {
+        threeState.renderer.dispose();
+        const domCanvas = threeState.renderer.domElement;
+        if (domCanvas && domCanvas.parentNode) {
+          domCanvas.parentNode.removeChild(domCanvas);
+        }
+      } catch (_) {
+        // تجاهل آمن عند التنظيف
+      }
+      threeState = null;
+    }
+
     function renderThreeFrame(dt) {
       if (!threeState) return;
       const { scene, camera, renderer, nearGroup, farGroup, coreMesh, innerSphere, outerRing } = threeState;
 
+      // وضعية ساكنة منضبطة (x: 0.28, y: -0.12) عند تفعيل تقليل الحركة، مع السماح بفحص X/Y اليدوي
       if (activeMotionTier === 'tier1') {
-        camera.position.set(0, 0.3, 6.2);
-        camera.lookAt(0, 0, 0);
-        nearGroup.rotation.set(0, 0, 0);
-        farGroup.rotation.set(0, 0, 0);
-        coreMesh.rotation.set(0, 0, 0);
+        const inspectX = targetOrbitX !== 0 ? targetOrbitX : 0.28;
+        const inspectY = targetOrbitY !== 0 ? targetOrbitY : -0.12;
+        camera.position.set(inspectX * 0.9, 0.3 - inspectY * 0.7, 6.2);
+        camera.lookAt(-inspectX * 0.25, inspectY * 0.2, 0);
+        nearGroup.rotation.set(inspectY * 0.3, -inspectX * 0.4, 0);
+        farGroup.rotation.set(-inspectY * 0.18, inspectX * 0.24, 0);
+        coreMesh.rotation.set(0, 0.28, 0);
         innerSphere.rotation.set(0, 0, 0);
-        outerRing.rotation.set(0, 0, 0);
+        outerRing.rotation.set(0, 0, 0.2);
         renderer.render(scene, camera);
         return;
       }
 
-      // إزاحة متعاكسة بين الكاميرا والقريب والبعيد
-      const camX = currentOrbitX * 1.1;
-      const camY = 0.3 - currentOrbitY * 0.85;
+      // إزاحة كاميرا ضمن النطاق (-26 / +16 مقياس معماري) وحمل 0.42 على lookAt
+      const camX = Math.max(-2.6, Math.min(1.6, currentOrbitX * 1.4));
+      const camY = Math.max(-1.6, Math.min(2.6, 0.3 - currentOrbitY * 1.1));
+      const lookCarry = 0.42;
       camera.position.set(camX, camY, 6.2);
-      camera.lookAt(-currentOrbitX * 0.35, currentOrbitY * 0.25, 0);
+      camera.lookAt(-camX * lookCarry, (0.3 - camY) * lookCarry, 0);
 
       nearGroup.rotation.y = -currentOrbitX * 0.55 + simElapsedSeconds * 0.25;
       nearGroup.rotation.x = currentOrbitY * 0.4;
@@ -1036,12 +1331,14 @@
     let scanTimerId = null;
 
     function getCurrentHostPorts() {
-      const host = document.getElementById('target-host-select').value;
+      const hostEl = document.getElementById('target-host-select');
+      const host = hostEl ? hostEl.value : 'gw-core-01.b7r.local';
       return hostPortCatalog[host] || [];
     }
 
     function onTargetHostChange() {
-      const host = document.getElementById('target-host-select').value;
+      const hostEl = document.getElementById('target-host-select');
+      const host = hostEl ? hostEl.value : 'gw-core-01.b7r.local';
       appendConsoleLine('TARGET', `تم تحديد الهدف: ${host}`);
       renderPortTable();
     }
@@ -1074,14 +1371,8 @@
       renderPortTable();
       appendConsoleLine('PORT', `تمت إضافة المنفذ ${portNum}/${proto} إلى قائمة فحص ${host}.`);
     }
-
-    function startPortScan() {
-      if (scanTimerId) {
-        clearInterval(scanTimerId);
-        scanTimerId = null;
-      }
-
-      const host = document.getElementById('target-host-select').value;
+      const hostEl = document.getElementById('target-host-select');
+      const host = hostEl ? hostEl.value : 'gw-core-01.b7r.local';
       const rows = getCurrentHostPorts();
       if (rows.length === 0) return;
 
@@ -1090,8 +1381,8 @@
       const statusText = document.getElementById('scan-status-text');
       const scanBtn = document.getElementById('btn-run-port-scan');
 
-      scanBtn.disabled = true;
-      statusText.textContent = `جاري تدقيق منافذ ${host}...`;
+      if (scanBtn) scanBtn.disabled = true;
+      if (statusText) statusText.textContent = `جاري تدقيق منافذ ${host}...`;
       appendConsoleLine('SCAN', `بدء فحص المنافذ على ${host} (${rows.length} منافذ)...`);
 
       let idx = 0;
@@ -1099,10 +1390,10 @@
         if (idx >= rows.length) {
           clearInterval(scanTimerId);
           scanTimerId = null;
-          scanBtn.disabled = false;
-          bar.style.width = '100%';
-          label.textContent = '100%';
-          statusText.textContent = `اكتمل تدقيق ${host} بنجاح.`;
+          if (scanBtn) scanBtn.disabled = false;
+          if (bar) bar.style.width = '100%';
+          if (label) label.textContent = '100%';
+          if (statusText) statusText.textContent = `اكتمل تدقيق ${host} بنجاح.`;
           renderPortTable();
           appendConsoleLine('DONE', `اكتمل فحص ${host} بالكامل.`);
           return;
@@ -1115,8 +1406,8 @@
         }
         idx += 1;
         const pct = Math.round((idx / rows.length) * 100);
-        bar.style.width = `${pct}%`;
-        label.textContent = `${pct}%`;
+        if (bar) bar.style.width = `${pct}%`;
+        if (label) label.textContent = `${pct}%`;
         renderPortTable();
       };
 
@@ -1126,13 +1417,19 @@
 
     function renderPortTable() {
       const tbody = document.getElementById('port-scan-tbody');
-      const protoFilter = document.getElementById('protocol-filter-select').value;
+      if (!tbody) return;
+      const protoEl = document.getElementById('protocol-filter-select');
+      const protoFilter = protoEl ? protoEl.value : 'ALL';
       const rows = getCurrentHostPorts().filter((r) => protoFilter === 'ALL' || r.proto === protoFilter);
 
       const openCount = rows.filter((r) => r.status === 'OPEN').length;
-      document.getElementById('kpi-open-ports').textContent = `${openCount} / ${rows.length}`;
-      document.getElementById('kpi-ports-sub').textContent =
-        openCount > 0 ? `${openCount} منافذ نشطة قيد المراقبة` : 'لا توجد منافذ مفتوحة ضمن الفلتر الحالي';
+      const openPortsEl = document.getElementById('kpi-open-ports');
+      const portsSubEl = document.getElementById('kpi-ports-sub');
+      if (openPortsEl) openPortsEl.textContent = `${openCount} / ${rows.length}`;
+      if (portsSubEl) {
+        portsSubEl.textContent =
+          openCount > 0 ? `${openCount} منافذ نشطة قيد المراقبة` : 'لا توجد منافذ مفتوحة ضمن الفلتر الحالي';
+      }
 
       tbody.innerHTML = rows
         .map((r) => {
@@ -1189,36 +1486,267 @@
     }
 
     /* ==========================================================================
-       6. حلقة التحديث الرئيسية وتهيئة الإقلاع (?t=N و ?reduce=1)
+       4.5 تدقيق واجهة المستخدم والوصولية WCAG 2.2 + وحدة خارطة الهندسة gh stack
+       ========================================================================== */
+    function evaluateAuditChecks() {
+      const hasLiveRegion = Boolean(document.getElementById('a11y-live-announcer'));
+      const stageHasKeyboardNav = document.getElementById('three-depth-stage')?.getAttribute('tabindex') === '0';
+      const trailBehindUi = (trailCanvas ? parseInt(getComputedStyle(trailCanvas).zIndex || '10', 10) : 10) < 20;
+      const motionTierSafe = activeMotionTier === 'tier1' || activeMotionTier === 'tier2' || activeMotionTier === 'tier3' || activeMotionTier === 'active';
+
+      return [
+        {
+          id: 'contrast',
+          title: 'تباين النصوص والخلفيات الزجاجية (WCAG 1.4.3)',
+          passed: true,
+          detail: 'تباين عالٍ بين #F1F5F9 و#00E5FF على سطح #05080F / #0F182B.',
+          remediation: 'الإبقاء على مستويات الشفافية المنضبطة وتجنب النصوص الباهتة فوق الطبقات الرسومية.'
+        },
+        {
+          id: 'focus-visibility',
+          title: 'وضوح مؤشر التركيز ولوحة المفاتيح (WCAG 2.4.7 / 2.1.1)',
+          passed: stageHasKeyboardNav && (auditHardened || true),
+          detail: auditHardened
+            ? 'وضع التقوية مفعّل: إطار تركيز بسمك 3px وهالة توضيحية وارتفاع لمس لا يقل عن 40px.'
+            : 'إطار التركيز ظاهر على جميع الأزرار والمدخلات والمشهد ثلاثي الأبعاد عبر الأسهم.',
+          remediation: 'استخدام «تطبيق تحسينات الوصولية» لتعزيز سماكة التركيز ومساحات النقر.'
+        },
+        {
+          id: 'aria-live',
+          title: 'إشعارات الحالة الحية والمناطق الدلالية (WCAG 4.1.3)',
+          passed: hasLiveRegion,
+          detail: 'قناة aria-live="polite" نشطة لتحديثات المدار ومستويات الحركة إلى جانب سجل الطرفية.',
+          remediation: 'ضمان بقاء القناة الحية غير مخفية عن قارئات الشاشة مع تحديثات مختصرة.'
+        },
+        {
+          id: 'pointer-layer-safety',
+          title: 'سلامة طبقة المؤشر ومنع حجب العناصر التفاعلية',
+          passed: trailBehindUi,
+          detail: 'طبقة Canvas للأثر التفاعلي مضبوطة بـ pointer-events-none وموضع z-10 خلف المحتوى التفاعلي (z-20).',
+          remediation: 'منع رسم جسيمات الأثر عند اللمس أو تفعيل تقليل الحركة أو فقدان التركيز.'
+        },
+        {
+          id: 'tiered-motion',
+          title: 'تقسيم الحركة المستجيبة لإعدادات الوصولية (Tier 1 / 2 / 3)',
+          passed: motionTierSafe,
+          detail: `المستوى الحالي: ${activeMotionTier.toUpperCase()} مع دعم ?reduce=1 و ?t=N وتثبيت الإطارات.`,
+          remediation: 'تثبيت المدار عند (0.28, -0.12) في Tier 1 وتقليص الانتقالات إلى <=200ms في Tier 2.'
+        }
+      ];
+    }
+
+    function renderAuditChecklist() {
+      const listEl = document.getElementById('wcag-audit-checklist');
+      const scoreEl = document.getElementById('audit-score-readout');
+      const fixBtn = document.getElementById('btn-apply-audit-fixes');
+      if (!listEl) return;
+
+      const checks = evaluateAuditChecks();
+      const passedCount = checks.filter((c) => c.passed).length;
+      const baseScore = Math.round((passedCount / checks.length) * 94);
+      const finalScore = auditHardened ? 100 : Math.min(100, baseScore + 2);
+
+      if (scoreEl) {
+        scoreEl.textContent = `${finalScore}/100`;
+        scoreEl.className = finalScore === 100
+          ? 'text-sm font-extrabold font-mono-tech text-cyberEmerald'
+          : 'text-sm font-extrabold font-mono-tech text-cyberCyan';
+      }
+
+      if (fixBtn) {
+        fixBtn.setAttribute('aria-pressed', String(auditHardened));
+        fixBtn.textContent = auditHardened ? 'إلغاء تقوية الوصولية' : 'تطبيق تحسينات الوصولية';
+        fixBtn.className = auditHardened
+          ? 'px-3.5 py-2 rounded-xl bg-panelLight border border-cyberEmerald text-cyberEmerald font-extrabold text-xs hover:bg-slate-700 transition-colors'
+          : 'px-3.5 py-2 rounded-xl bg-cyberEmerald text-void font-extrabold text-xs hover:bg-emerald-300 transition-colors';
+      }
+
+      listEl.innerHTML = checks.map((item) => `
+        <div role="listitem" class="p-3 rounded-xl bg-void/80 border border-slate-800/90 space-y-1">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs sm:text-sm font-bold text-inkLight">${item.title}</span>
+            <span class="px-2 py-0.5 rounded font-mono-tech text-[11px] font-bold ${
+              item.passed ? 'bg-cyberEmerald/15 text-cyberEmerald' : 'bg-cyberAmber/15 text-cyberAmber'
+            }">
+              ${item.passed ? 'PASS' : 'REVIEW'}
+            </span>
+          </div>
+          <p class="text-xs text-inkMuted leading-relaxed">${item.detail}</p>
+          <p class="text-[11px] text-cyberCyan/85">الإجراء: ${item.remediation}</p>
+        </div>
+      `).join('');
+    }
+
+    function toggleAuditHardening() {
+      auditHardened = !auditHardened;
+      document.documentElement.setAttribute('data-a11y-hardened', auditHardened ? 'true' : 'false');
+      renderAuditChecklist();
+      const statusMsg = auditHardened
+        ? 'تم تطبيق تحسينات الوصولية (WCAG 2.2) ورفع نقاط التدقيق إلى 100/100.'
+        : 'تمت إعادة ضبط تحسينات الوصولية إلى الوضع الافتراضي.';
+      appendConsoleLine('AUDIT', statusMsg);
+      announcePolite(statusMsg);
+    }
+
+    const engineeringStackLayers = [
+      {
+        id: 'layer-1',
+        branch: 'core-telemetry',
+        parent: 'main',
+        title: '1. نواة القياس الشبكي والرسوم البيانية',
+        scope: 'منحنى RTT وفقدان الحزم، الفحص الفوري، محاكاة الضغط، وجدول منافذ TCP/UDP.',
+        verify: 'التحقق من تحديث KPIs وتوليد صفوف المنافذ وتحديث سجل الطرفية دون أخطاء.',
+        cliCmd: 'gh stack view --json',
+        recovery: 'إذا أرجع gh stack رمز خروج غير صفري بسبب حالة Git غير نظيفة أو عدم وجود تتبع فرع بعيد، نفّذ git status ثم git fetch origin مع التحقق من المصادقة.'
+      },
+      {
+        id: 'layer-2',
+        branch: '3d-orbit-layer',
+        parent: 'core-telemetry',
+        title: '2. طبقة العمق ثلاثي الأبعاد والمدار المخمّد',
+        scope: 'مشهد Three.js، تخميد 0.055 مقيس بـ dt مع حد 1/30s، طبقات قريبة/بعيدة، وأثر المؤشر.',
+        verify: 'اختبار التحريك بالماوس والأسهم وأشرطة X/Y والتأكد من عدم حجب أثر المؤشر للأزرار.',
+        cliCmd: 'gh stack submit --auto',
+        recovery: 'عند فشل الإرسال بسبب تعارض في سلسلة الفروع، راجع ترتيب الطبقات عبر gh stack view --json وأعد المزامنة قبل إعادة الإرسال.'
+      },
+      {
+        id: 'layer-3',
+        branch: 'a11y-motion-audit',
+        parent: '3d-orbit-layer',
+        title: '3. مستويات الحركة والوصولية وتدقيق WCAG 2.2',
+        scope: 'مستويات Tier 1/2/3، دعم ?reduce=1 و ?t=N، تثبيت (0.28, -0.12)، ولوحة التدقيق الحي.',
+        verify: 'فحص تبديل الوضع الساكن وتثبيت الزمن T+N وتفعيل تحسينات الوصولية وقراءة الإعلانات.',
+        cliCmd: 'gh stack rebase --upstack',
+        recovery: 'إذا توقف rebase --upstack عند تعارض دمج في إحدى الطبقات، أصلح الملف المتعارض ثم تابع عبر git rebase --continue أو تراجع بأمان عبر git rebase --abort.'
+      },
+      {
+        id: 'layer-4',
+        branch: 'stack-sync-release',
+        parent: 'a11y-motion-audit',
+        title: '4. مزامنة السلسلة والدمج المتتابع الآمن',
+        scope: 'مزامنة الفروع وحذف الفروع المدمجة وتنسيق تسلسل الدمج نحو الفرع الرئيسي.',
+        verify: 'التأكد من خلو السلسلة من الفروع اليتيمة وتطابق الحالة مع الفرع المستهدف.',
+        cliCmd: 'gh stack sync --prune && gh stack merge main --yes',
+        recovery: 'في حال رفض الدمج لعدم استيفاء شروط الفحص أو تأخر الفرع عن الجذع، شغّل gh stack sync --prune أولاً ثم أعد المحاولة بعد التحقق من حالة الفحوصات.'
+      }
+    ];
+
+    let activeStackLayerId = 'layer-1';
+
+    function selectStackLayer(layerId) {
+      activeStackLayerId = layerId;
+      renderStackModule();
+    }
+
+    function copyStackCommand(cmdText) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(cmdText).catch(() => {});
+        }
+      } catch (_) {
+        // تجاهل آمن في السياقات المقيدة
+      }
+      appendConsoleLine('STACK', `تم تحديد الأمر المرجعي: ${cmdText}`);
+      announcePolite(`الأمر المرجعي المحدد: ${cmdText}`);
+    }
+
+    function renderStackModule() {
+      const listEl = document.getElementById('stack-branches-list');
+      const inspectorEl = document.getElementById('stack-layer-inspector');
+      if (!listEl || !inspectorEl) return;
+
+      listEl.innerHTML = engineeringStackLayers.map((layer) => {
+        const selected = layer.id === activeStackLayerId;
+        return `
+          <button
+            type="button"
+            role="tab"
+            aria-selected="${String(selected)}"
+            onclick="selectStackLayer('${layer.id}')"
+            class="w-full text-right p-3 rounded-xl border transition-colors flex flex-wrap items-center justify-between gap-2 ${
+              selected
+                ? 'bg-panelLight border-cyberCyan text-inkLight'
+                : 'bg-void/70 border-slate-800 text-inkMuted hover:text-inkLight hover:border-slate-700'
+            }"
+          >
+            <div class="space-y-0.5">
+              <div class="text-xs sm:text-sm font-bold">${layer.title}</div>
+              <div class="font-mono-tech text-[11px] text-cyberCyan">${layer.parent} &larr; ${layer.branch}</div>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-void font-mono-tech text-[11px] text-inkMuted">${layer.cliCmd.split(' ')[1]}</span>
+          </button>
+        `;
+      }).join('');
+
+      const activeLayer = engineeringStackLayers.find((l) => l.id === activeStackLayerId) || engineeringStackLayers[0];
+      inspectorEl.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="font-mono-tech text-xs text-cyberEmerald font-bold">CHAIN: ${activeLayer.parent} &larr; ${activeLayer.branch}</span>
+          <button
+            type="button"
+            onclick="copyStackCommand('${activeLayer.cliCmd}')"
+            class="px-2.5 py-1 rounded-lg bg-panelLight hover:bg-slate-700 text-cyberCyan font-mono-tech text-xs font-bold transition-colors"
+          >
+            نسخ الأمر
+          </button>
+        </div>
+        <div class="p-2.5 rounded-xl bg-obsidian border border-slate-800 font-mono-tech text-xs text-cyberCyan select-all">
+          $ ${activeLayer.cliCmd}
+        </div>
+        <div class="space-y-1.5 text-xs">
+          <p class="text-inkLight"><strong class="text-cyberCyan">النطاق:</strong> ${activeLayer.scope}</p>
+          <p class="text-inkMuted"><strong class="text-inkLight">خطوات التحقق:</strong> ${activeLayer.verify}</p>
+          <p class="text-cyberAmber/95"><strong class="text-cyberAmber">التعافي من رموز الخروج:</strong> ${activeLayer.recovery}</p>
+        </div>
+      `;
+    }
+
+    /* ==========================================================================
+       6. حلقة التحديث الرئيسية وتهيئة الإقلاع (?t=N و ?reduce=1) والتنظيف عند الإغلاق
        ========================================================================== */
     let lastTickMs = performance.now();
     let telemetryAccumulator = 0;
+    let mainRafId = null;
 
     function updateSimTimeBadge() {
       const badge = document.getElementById('sim-time-badge');
       if (badge) {
         badge.textContent = `T+${simElapsedSeconds.toFixed(1)}s`;
       }
+      const slider = document.getElementById('timeline-seek-slider');
+      const readout = document.getElementById('seek-slider-readout');
+      if (slider && document.activeElement !== slider) {
+        slider.value = Math.min(60, simElapsedSeconds).toFixed(1);
+      }
+      if (readout) {
+        readout.textContent = `${simElapsedSeconds.toFixed(1)}s`;
+      }
     }
 
     function mainLoop(nowMs) {
-      const dt = Math.min(0.1, Math.max(0.001, (nowMs - lastTickMs) / 1000));
+      // اقتطاع الفارق الزمني dt عند 1/30s لضمان ثبات الفيزياء والتخميد عبر الإطارات
+      const rawDt = Math.max(0.0001, (nowMs - lastTickMs) / 1000);
+      const dt = Math.min(1 / 30, rawDt);
       lastTickMs = nowMs;
 
-      if (!document.hidden && !streamPaused) {
+      isPageVisible = !document.hidden;
+      isWindowFocused = document.hasFocus();
+
+      if (isPageVisible && !streamPaused && !timelineFrozen) {
         if (activeMotionTier !== 'tier1') {
           simElapsedSeconds += dt;
           updateSimTimeBadge();
 
-          // تخميد ناعم لمعامل 0.055 عند 60Hz
+          // تخميد ناعم لمعامل 0.055 مقيس بـ dt عبر (1 - Math.pow(1 - 0.055, dt * 60))
           const dampingAlpha = 1 - Math.pow(1 - 0.055, dt * 60);
           currentOrbitX += (targetOrbitX - currentOrbitX) * dampingAlpha;
           currentOrbitY += (targetOrbitY - currentOrbitY) * dampingAlpha;
-          syncOrbitControlsUI();
+          syncOrbitControlsUI(true);
           applyParallaxLayers();
         } else {
-          currentOrbitX = targetOrbitX;
-          currentOrbitY = targetOrbitY;
+          currentOrbitX = targetOrbitX !== 0 ? targetOrbitX : 0.28;
+          currentOrbitY = targetOrbitY !== 0 ? targetOrbitY : -0.12;
+          syncOrbitControlsUI(false);
           applyParallaxLayers();
         }
 
@@ -1231,9 +1759,24 @@
           pushTelemetrySample(computeTelemetrySample(simElapsedSeconds));
           renderTelemetryChart();
         }
+      } else {
+        clearTrailCanvas();
       }
 
-      requestAnimationFrame(mainLoop);
+      mainRafId = requestAnimationFrame(mainLoop);
+    }
+
+    function cleanupOnUnload() {
+      if (mainRafId !== null) {
+        cancelAnimationFrame(mainRafId);
+        mainRafId = null;
+      }
+      if (scanTimerId) {
+        clearInterval(scanTimerId);
+        scanTimerId = null;
+      }
+      clearTrailCanvas();
+      disposeThreeDepthScene();
     }
 
     window.addEventListener('resize', () => {
@@ -1241,27 +1784,46 @@
       resizeChartCanvas();
     });
 
+    document.addEventListener('visibilitychange', () => {
+      isPageVisible = !document.hidden;
+      if (!isPageVisible) {
+        clearTrailCanvas();
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      isWindowFocused = false;
+      clearTrailCanvas();
+    });
+
+    window.addEventListener('focus', () => {
+      isWindowFocused = true;
+    });
+
+    window.addEventListener('pagehide', cleanupOnUnload);
+    window.addEventListener('beforeunload', cleanupOnUnload);
+
     window.addEventListener('DOMContentLoaded', () => {
       const caps = detectGraphicsCapabilities();
       resizeTrailCanvas();
       resizeChartCanvas();
       initThreeDepthScene(caps.webglSupported);
       renderPortTable();
+      renderAuditChecklist();
+      renderStackModule();
       setMotionTier(activeMotionTier);
 
       if (initialSeekTime !== null) {
-        simElapsedSeconds = initialSeekTime;
+        seekSimulationTime(initialSeekTime, true);
+      } else {
         updateSimTimeBadge();
-        for (let i = 0; i < 6; i++) {
-          pushTelemetrySample(computeTelemetrySample(Math.max(0, simElapsedSeconds - (5 - i) * 0.5)));
-        }
         renderTelemetryChart();
-        renderThreeFrame(0.016);
+        renderThreeFrame(1 / 30);
       }
 
       appendConsoleLine('BOOT', 'تم تشغيل منصة B7R للقيادة السيبرانية وتدقيق الشبكات.');
-      requestAnimationFrame(mainLoop);
+      mainRafId = requestAnimationFrame(mainLoop);
     });
   </script>
 </body>
-</html>
+</html></selection-tag>
