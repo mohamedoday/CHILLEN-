@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بحر | عمارة الطهي الساحلي</title>
+    
+    <!-- الخطوط العربية: Amiri للعناوين التحريرية و IBM Plex Sans Arabic للنصوص -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        abyss: {
+                            DEFAULT: '#0B131E',
+                            deep: '#070C14',
+                            surface: '#101B29'
+                        },
+                        basalt: {
+                            DEFAULT: '#152232',
+                            light: '#1E3046',
+                            border: '#283E58'
+                        },
+                        sand: {
+                            DEFAULT: '#F5EFE6',
+                            warm: '#EBE1D3',
+                            muted: '#D5C7B4'
+                        },
+                        copper: {
+                            DEFAULT: '#C88A55',
+                            light: '#DFA36E',
+                            dark: '#9E6636'
+                        },
+                        foam: {
+                            DEFAULT: '#4A6B7C',
+                            light: '#7297AA',
+                            dark: '#314956'
+                        },
+                        pearl: '#F4EFE6',
+                        slate: '#9FB1BE'
+                    },
+                    fontFamily: {
+                        sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+                        serif: ['Amiri', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-abyss: #0B131E;
+            --bg-basalt: #152232;
+            --bg-sand: #F5EFE6;
+            --accent-copper: #C88A55;
+            --accent-foam: #4A6B7C;
+            --text-pearl: #F4EFE6;
+            --text-slate: #9FB1BE;
+        }
+
+        /* شريط التمرير المعماري */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-abyss);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #283E58;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-copper);
+        }
+
+        /* نسيج حبيبي سينمائي خفيف (Film Grain) */
+        .film-grain-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+        }
+
+        /* نسيج الرمل اللؤلؤي للأقسام الفاتحة */
+        .pearl-sand-texture {
+            background-color: var(--bg-sand);
+            background-image: 
+                radial-gradient(rgba(21, 34, 50, 0.04) 1px, transparent 0),
+                radial-gradient(rgba(200, 138, 85, 0.05) 1px, transparent 0);
+            background-size: 26px 26px;
+            background-position: 0 0, 13px 13px;
+        }
+
+        /* مسرح المنظور ثلاثي الأبعاد */
+        .orbit-stage {
+            perspective: 1400px;
+            transform-style: preserve-3d;
+        }
+        .parallax-layer {
+            will-change: transform;
+            transform-style: preserve-3d;
+        }
+
+        /* بريق النحاس المتحرك على الشعار وبطاقة الدعوة */
+        .copper-shimmer-text {
+            background: linear-gradient(110deg, #F4EFE6 20%, #C88A55 48%, #F4EFE6 75%);
+            background-size: 220% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* ستارة الكشف المعماري (Clip-path Reveal) */
+        .arch-curtain {
+            clip-path: inset(0% 0% 0% 0% round 1.5rem);
+        }
+
+        /* بطاقة الدعوة ثلاثية الأبعاد */
+        .invitation-tilt-wrap {
+            perspective: 1100px;
+        }
+        .invitation-card-3d {
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: box-shadow 0.35s ease;
+        }
+
+        /* تخصيص شريط التمرير اليدوي لبوصلة المنظور */
+        input[type="range"].compass-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(244, 239, 230, 0.12);
+            height: 4px;
+            border-radius: 999px;
+        }
+        input[type="range"].compass-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #C88A55;
+            cursor: pointer;
+            border: 2px solid #0B131E;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* المستوى الصارم لتقليل الحركة (Tiered Reduced Motion) */
+        html.reduced-motion,
+        html.reduced-motion * {
+            scroll-behavior: auto !important;
+        }
+        html.reduced-motion .parallax-layer,
+        html.reduced-motion .invitation-card-3d {
+            transition: none !important;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-abyss text-pearl font-sans antialiased selection:bg-copper selection:text-abyss overflow-x-hidden relative">
+
+    <!-- طبقة النسيج الحبيبي السينمائي الثابتة -->
+    <div class="film-grain-overlay fixed inset-0 pointer-events-none z-50" aria-hidden="true"></div>
+
+    <!-- مقياس عمق المد والجزر الجانبي (Tide Depth Progress Gauge) -->
+    <aside aria-hidden="true" class="fixed left-3 sm:left-5 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-2 pointer-events-none">
+        <span class="text-[9px] font-mono text-slate/60 tracking-widest uppercase [writing-mode:vertical-rl] rotate-180">عمق المد</span>
+        <div class="w-[2px] h-36 bg-pearl/10 rounded-full relative overflow-hidden">
+            <div id="tide-progress-bar" class="w-full h-full bg-gradient-to-b from-foam-light via-copper to-copper-light origin-top scale-y-0"></div>
+        </div>
+        <span id="tide-depth-readout" class="text-[10px] font-mono text-copper">00m</span>
+    </aside>
+
+    <!-- الشريط العلوي المعماري -->
+    <header class="fixed top-0 inset-x-0 z-40 bg-abyss/85 backdrop-blur-md border-b border-pearl/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
+            <!-- الهوية والشعار -->
+            <a href="#hero" class="flex items-center gap-3.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-copper rounded-xl p-1">
+                <div class="w-11 h-11 rounded-xl bg-basalt border border-copper/45 flex items-center justify-center relative overflow-hidden group-hover:border-copper transition-colors">
+                    <span class="font-serif text-2xl text-copper font-bold relative z-10">ب</span>
+                    <div class="absolute bottom-0 inset-x-0 h-1.5 bg-foam/50"></div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-serif text-2xl font-bold text-pearl leading-none">بحر</span>
+                    <span class="text-[10px] tracking-[0.22em] text-foam-light uppercase mt-1">BAHR COASTAL</span>
+                </div>
+            </a>
+
+            <!-- روابط التنقل -->
+            <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-slate">
+                <a href="#architecture" class="hover:text-copper transition-colors py-2 focus-visible:outline-none focus-visible:text-copper">فلسفة العمارة</a>
+                <a href="#menu" class="hover:text-copper transition-colors py-2 focus-visible:outline-none focus-visible:text-copper">قائمة الطعام</a>
+                <a href="#reservation" class="hover:text-copper transition-colors py-2 focus-visible:outline-none focus-visible:text-copper">حجز طاولة</a>
+            </nav>
+
+            <!-- أدوات التحكم والحجز -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- زر تهدئة الحركة (WCAG 2.2.2 Pause/Stop Control) -->
+                <button 
+                    type="button" 
+                    id="calm-motion-toggle" 
+                    onclick="toggleCalmMotion()" 
+                    aria-pressed="false"
+                    class="px-3 py-2 rounded-xl bg-basalt/90 hover:bg-basalt-light border border-foam/35 text-xs font-medium text-slate hover:text-pearl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper"
+                    title="إيقاف أو تشغيل الحركة المحيطية المستمرة"
+                >
+                    <span id="calm-indicator-dot" class="w-2 h-2 rounded-full bg-foam-light"></span>
+                    <span id="calm-motion-label">تهدئة الحركة</span>
+                </button>
+
+                <!-- زر تفضيلات الطاولة -->
+                <button 
+                    type="button"
+                    id="header-cart-btn"
+                    onclick="toggleDrawer()" 
+                    aria-label="عرض تفضيلات الطاولة" 
+                    class="relative px-3.5 py-2 rounded-xl bg-basalt hover:bg-basalt-light border border-pearl/15 hover:border-copper/50 text-pearl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper"
+                >
+                    <svg class="w-4 h-4 text-copper" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span class="hidden sm:inline text-xs font-medium">تفضيلات الطاولة</span>
+                    <span id="cart-badge" class="bg-copper text-abyss text-xs font-bold px-1.5 py-0.5 rounded-md min-w-[20px] text-center">0</span>
+                </button>
+
+                <!-- زر حجز مباشر -->
+                <a href="#reservation" class="px-4 sm:px-5 py-2.5 rounded-xl bg-copper hover:bg-copper-light text-abyss font-bold text-xs sm:text-sm transition-colors shadow-lg shadow-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pearl">
+                    احجز طاولة
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. القسم الرئيسي (Hero Stage): كشف معماري + مدار منظور + انعكاسات مائية وأثر شبكي ضوئي -->
+    <section id="hero" class="relative pt-28 pb-20 lg:pt-36 lg:pb-28 min-h-[96vh] flex items-center border-b border-pearl/10 overflow-hidden">
+        
+        <!-- لوحة Canvas 2D التفاعلية: انعكاسات الماء الضوئية + الشبكة النقطية المتلألئة -->
+        <canvas id="hero-caustic-canvas" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+        <!-- هالات ضوئية معمارية في الخلفية -->
+        <div class="absolute top-1/4 right-12 w-[460px] h-[460px] bg-foam/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+        <div class="absolute bottom-12 left-1/4 w-[380px] h-[380px] bg-copper/10 rounded-full blur-3xl pointer-events-none z-0"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+                
+                <!-- العمود الأيمن: النصوص التحريرية وبوصلة المنظور -->
+                <div class="lg:col-span-6 space-y-7 lg:pl-6">
+                    <div class="hero-stagger inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-basalt/90 border border-foam/40 text-pearl/90 text-xs font-medium backdrop-blur-sm">
+                        <span class="w-2 h-2 rounded-full bg-copper"></span>
+                        <span>الواجهة الساحلية • بازلت، رمل لؤلؤي ونحاس</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- الشعار الخطي الرئيسي مع تأثير بريق النحاس -->
+                        <h1 id="hero-emblem" class="hero-stagger font-serif text-7xl sm:text-8xl lg:text-[8rem] font-bold leading-none tracking-tight copper-shimmer-text select-none">
+                            بحر
+                        </h1>
+                        <!-- خط الأفق المائي الفاصل -->
+                        <div id="hero-horizon-line" class="h-[1px] w-48 bg-gradient-to-l from-copper via-foam-light to-transparent origin-right"></div>
+                        <p class="hero-stagger text-xl sm:text-2xl text-copper font-light leading-relaxed max-w-lg">
+                            حيث يسكن البازلت الداكن عند حافة الماء، وتنعكس أضواء النحاس الدافئة على رمل الشاطئ.
+                        </p>
+                    </div>
+
+                    <p class="hero-stagger text-slate text-base sm:text-lg leading-relaxed max-w-xl font-normal">
+                        مساحة طهي معمارية تحتفي بصيد الساحل اليومي المشوي على نار خشب الساج، في حوار بصري وصوتي يجمع بين عمق المحيط وصفاء المحار اللؤلؤي.
+                    </p>
+
+                    <div class="hero-stagger pt-1 flex flex-wrap items-center gap-4">
+                        <a href="#reservation" class="px-8 py-4 rounded-xl bg-copper hover:bg-copper-light text-abyss font-bold text-base transition-colors flex items-center gap-3 shadow-xl shadow-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pearl">
+                            <span>احجز طاولتك</span>
+                            <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </a>
+                        <a href="#menu" class="px-8 py-4 rounded-xl bg-basalt/85 hover:bg-basalt border border-pearl/20 hover:border-copper text-pearl font-medium text-base transition-colors backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper">
+                            استكشف القائمة
+                        </a>
+                    </div>
+
+                    <!-- بوصلة المنظور القابلة للطي للتحكم الدقيق بلوحة المفاتيح -->
+                    <div class="hero-stagger pt-4 border-t border-pearl/10 max-w-md">
+                        <button 
+                            type="button" 
+                            id="compass-toggle-btn"
+                            onclick="toggleCompassPanel()" 
+                            aria-expanded="false"
+                            aria-controls="perspective-compass-panel"
+                            class="flex items-center justify-between w-full text-xs font-medium text-slate hover:text-copper transition-colors py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper rounded-lg"
+                        >
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-copper" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 2v4m0 12v4M2 12h4m12 0h4m-10-6a6 6 0 100 12 6 6 0 000-12z" />
+                                </svg>
+                                <span>بوصلة المنظور المعماري (ضبط الزاوية يدوياً)</span>
+                            </span>
+                            <span id="compass-chevron" class="text-copper transition-transform duration-200">▾</span>
+                        </button>
+
+                        <div id="perspective-compass-panel" class="hidden mt-3 p-4 rounded-2xl bg-basalt/90 border border-pearl/15 space-y-3 backdrop-blur-md">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate mb-1">
+                                        <label for="compass-x">المحور الأفقي (X)</label>
+                                        <span id="compass-x-val" class="font-mono text-copper">0.00</span>
+                                    </div>
+                                    <input type="range" id="compass-x" min="-1" max="1" step="0.05" value="0" oninput="onCompassSliderChange()" class="compass-slider w-full">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate mb-1">
+                                        <label for="compass-y">المحور الرأسي (Y)</label>
+                                        <span id="compass-y-val" class="font-mono text-copper">0.00</span>
+                                    </div>
+                                    <input type="range" id="compass-y" min="-1" max="1" step="0.05" value="0" oninput="onCompassSliderChange()" class="compass-slider w-full">
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center pt-1">
+                                <span class="text-[11px] text-slate/70">يستجيب تلقائياً لحركة المؤشر أو الأسهم</span>
+                                <button type="button" onclick="resetOrbit()" class="text-xs font-bold text-copper hover:underline">إعادة التوسيط</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- العمود الأيسر: مسرح الطبقات المعمارية المتعاكسة (Multi-Layer Parallax Orbit) -->
+                <div class="lg:col-span-6 orbit-stage py-4">
+                    <div id="orbit-container" class="relative mx-auto w-full max-w-lg h-[490px] sm:h-[560px]">
+                        
+                        <!-- الطبقة البعيدة (Depth -14): الأفق السماوي الغسقي -->
+                        <div data-depth="-14" class="parallax-layer absolute -top-7 -left-6 w-3/4 h-3/4 rounded-3xl bg-gradient-to-br from-foam/25 via-abyss-surface to-abyss border border-foam/30 shadow-xl">
+                            <div class="p-4 flex items-center gap-2 text-[10px] font-mono text-foam-light/80 tracking-widest">
+                                <span>TWILIGHT HORIZON // 24°N</span>
+                            </div>
+                        </div>
+
+                        <!-- الطبقة الخلفية (Depth 14): عمود البازلت المنحوت -->
+                        <div data-depth="14" class="parallax-layer absolute -top-4 -right-5 w-4/5 h-4/5 rounded-3xl bg-basalt border border-basalt-border shadow-2xl">
+                            <div class="p-5 flex justify-between items-center border-b border-pearl/5">
+                                <span class="text-[11px] font-mono text-slate tracking-widest">BASALT MONOLITH // 01</span>
+                                <span class="w-2 h-2 rounded-full bg-copper"></span>
+                            </div>
+                        </div>
+
+                        <!-- الطبقة الوسطى (Depth 26): الستارة المعمارية وحوض الماء العاكس -->
+                        <div id="hero-arch-frame" data-depth="26" class="parallax-layer arch-curtain absolute inset-3 rounded-2xl overflow-hidden border border-copper/45 bg-abyss-surface shadow-2xl">
+                            <img 
+                                src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1000&q=85" 
+                                alt="واجهة مطعم بحر المعمارية المطلة على الحوض المائي العاكس" 
+                                class="w-full h-full object-cover object-center opacity-85 scale-105"
+                                onerror="this.onerror=null; this.src='https://placehold.co/800x1000/152232/F5EFE6?text=BAHR+COASTAL+ARCHITECTURE';"
+                            >
+                            <div class="absolute inset-0 bg-gradient-to-t from-abyss via-abyss/30 to-transparent"></div>
+                            
+                            <!-- انعكاس الضوء الذهبي على حوض الماء في أسفل الإطار -->
+                            <div class="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-abyss via-copper/15 to-transparent pointer-events-none"></div>
+                        </div>
+
+                        <!-- الطبقة الأمامية العلوية (Depth 42): شارة النحاس البحري -->
+                        <div data-depth="42" class="parallax-layer hero-float-badge absolute -top-3 left-4 sm:left-6 px-4 py-3 rounded-2xl bg-abyss/90 backdrop-blur-md border border-copper/55 shadow-xl flex items-center gap-3">
+                            <div class="w-2.5 h-2.5 rounded-full bg-copper"></div>
+                            <div>
+                                <span class="block text-[11px] text-slate">حالة الحوض العاكس</span>
+                                <span class="block text-xs font-bold text-pearl">مدّ هادئ • ٢٤° مئوية</span>
+                            </div>
+                        </div>
+
+                        <!-- الطبقة الأمامية السفلية (Depth 52): بطاقة الرمل اللؤلؤي التحريرية -->
+                        <div data-depth="52" class="parallax-layer hero-float-badge absolute -bottom-5 right-4 left-8 sm:left-auto sm:w-80 p-5 sm:p-6 rounded-2xl bg-sand text-abyss shadow-2xl border border-sand-muted">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11px] font-bold tracking-wider text-copper-dark uppercase">عمارة الساحل</span>
+                                <span class="text-xs font-serif font-bold text-foam-dark">٢٠٢٦</span>
+                            </div>
+                            <p class="font-serif text-lg sm:text-xl font-bold leading-snug text-abyss">
+                                «تُبنى السكينة عندما يلتقي ثقل البازلت بخفة الماء.»
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. قسم فلسفة العمارة ورحلة التذوق (Scroll-Choreographed Storytelling) -->
+    <section id="architecture" class="py-24 pearl-sand-texture text-abyss relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="arch-header flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+                <div class="max-w-2xl">
+                    <span class="text-xs font-bold tracking-widest text-copper-dark uppercase block mb-3">الركائز الحسية الثلاث</span>
+                    <h2 class="font-serif text-4xl sm:text-5xl font-bold text-abyss mb-4">
+                        فلسفة المكان والتذوق
+                    </h2>
+                    <p class="text-abyss/80 text-base sm:text-lg leading-relaxed">
+                        تتناغم عناصر الطبيعة الساحلية في «بحر» لتصوغ تجربة تبدأ من ملمس الحجر تحت اليد، وتمر بإيقاع المد والجزر، وتكتمل بوهج نار الساج.
+                    </p>
+                </div>
+                <div class="text-xs font-medium text-foam-dark border-r-2 border-copper pr-3 py-1">
+                    عمارة ساحلية مستدامة<br>بإضاءة كهرمانية غير مباشرة
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- الركيزة 1: المادة والحجر -->
+                <article class="pillar-card p-8 rounded-2xl bg-abyss text-pearl border border-basalt-border shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-8">
+                            <span class="w-12 h-12 rounded-xl bg-basalt border border-foam/35 text-copper flex items-center justify-center font-serif text-xl font-bold">٠١</span>
+                            <span class="text-xs font-mono text-foam-light">BASALT & PEARL</span>
+                        </div>
+                        <h3 class="font-serif text-2xl font-bold text-pearl mb-3">المادة والحجر</h3>
+                        <p class="text-slate text-sm sm:text-base leading-relaxed">
+                            كتل من البازلت البركاني الداكن تجاور أسطح الرمل والمحار اللؤلؤي المصقول، فتمنح الصالة عزلاً صوتياً دافئاً وتوازناً بصرياً هادئاً.
+                        </p>
+                    </div>
+                    <div class="mt-8 pt-4 border-t border-pearl/10 flex items-center justify-between text-xs text-slate">
+                        <span>الركيزة الأولى</span>
+                        <span class="text-copper">ملمس صخري ولؤلؤي</span>
+                    </div>
+                </article>
+
+                <!-- الركيزة 2: المد والجزر -->
+                <article class="pillar-card p-8 rounded-2xl bg-sand-warm text-abyss border border-abyss/15 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-8">
+                            <span class="w-12 h-12 rounded-xl bg-abyss text-pearl flex items-center justify-center font-serif text-xl font-bold">٠٢</span>
+                            <span class="text-xs font-mono text-abyss/60">TIDE & HARVEST</span>
+                        </div>
+                        <h3 class="font-serif text-2xl font-bold text-abyss mb-3">المد والجزر</h3>
+                        <p class="text-abyss/80 text-sm sm:text-base leading-relaxed">
+                            تتجدد قائمتنا مع حركة الصيد الفجري اليومي؛ ننتقي الأسماك والمحار من المياه العميقة ونحفظ نضارتها بأقل قدر من التدخل.
+                        </p>
+                    </div>
+                    <div class="mt-8 pt-4 border-t border-abyss/10 flex items-center justify-between text-xs text-abyss/70">
+                        <span>الركيزة الثانية</span>
+                        <span class="text-copper-dark font-semibold">صيد صباحي مستدام</span>
+                    </div>
+                </article>
+
+                <!-- الركيزة 3: نار الساج -->
+                <article class="pillar-card p-8 rounded-2xl bg-basalt text-pearl border border-copper/35 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-8">
+                            <span class="w-12 h-12 rounded-xl bg-copper text-abyss flex items-center justify-center font-serif text-xl font-bold">٠٣</span>
+                            <span class="text-xs font-mono text-copper">TEAK FIRE</span>
+                        </div>
+                        <h3 class="font-serif text-2xl font-bold text-pearl mb-3">نار الساج</h3>
+                        <p class="text-slate text-sm sm:text-base leading-relaxed">
+                            موقد مفتوح يُغذّى بأخشاب الساج المعتّقة، يضفي على المأكولات البحرية طبقة دخانية عطرية رقيقة وقشرة ذهبية مقرمشة.
+                        </p>
+                    </div>
+                    <div class="mt-8 pt-4 border-t border-pearl/10 flex items-center justify-between text-xs text-slate">
+                        <span>الركيزة الثالثة</span>
+                        <span class="text-foam-light">شواء بطيء على الجمر</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. قائمة الطعام التفاعلية (Menu with Animated Pill & Staggered Re-entry) -->
+    <section id="menu" class="py-24 bg-abyss border-t border-pearl/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- رأس القائمة وفلاتر النظام الغذائي -->
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+                <div>
+                    <span class="text-xs font-bold tracking-widest text-copper uppercase block mb-3">مطبخ الساحل والموقد</span>
+                    <h2 class="font-serif text-4xl sm:text-5xl font-bold text-pearl">
+                        قائمة الطعام الموسمية
+                    </h2>
+                </div>
+
+                <!-- فلاتر التفضيلات الغذائية مع مؤشر انزلاقي متحرك -->
+                <div class="relative inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-basalt border border-pearl/10" role="group" aria-label="تصفية الأطباق حسب النظام الغذائي">
+                    <div id="diet-active-pill" class="absolute bg-copper rounded-xl pointer-events-none transition-none" style="top: 6px; height: calc(100% - 12px);"></div>
+                    <button type="button" onclick="setDietaryFilter('all', this)" data-diet="all" class="diet-btn relative z-10 px-4 py-2 rounded-xl text-xs font-bold text-abyss transition-colors">
+                        الكل
+                    </button>
+                    <button type="button" onclick="setDietaryFilter('chef', this)" data-diet="chef" class="diet-btn relative z-10 px-4 py-2 rounded-xl text-xs font-medium text-slate hover:text-pearl transition-colors">
+                        توصية الشيف
+                    </button>
+                    <button type="button" onclick="setDietaryFilter('gf', this)" data-diet="gf" class="diet-btn relative z-10 px-4 py-2 rounded-xl text-xs font-medium text-slate hover:text-pearl transition-colors">
+                        خالي من الغلوتين
+                    </button>
+                    <button type="button" onclick="setDietaryFilter('veg', this)" data-diet="veg" class="diet-btn relative z-10 px-4 py-2 rounded-xl text-xs font-medium text-slate hover:text-pearl transition-colors">
+                        نباتي
+                    </button>
+                </div>
+            </div>
+
+            <!-- تبويبات الأقسام الأربعة -->
+            <div class="flex overflow-x-auto pb-2 mb-10 border-b border-pearl/15 gap-2 sm:gap-4 no-scrollbar" role="tablist">
+                <button type="button" onclick="setCategory('cold_oysters')" data-cat="cold_oysters" role="tab" class="cat-tab px-5 py-3.5 rounded-t-xl text-sm sm:text-base font-bold whitespace-nowrap border-b-2 border-copper text-copper bg-basalt/75 transition-colors">
+                    المقبلات الباردة والمحار
+                </button>
+                <button type="button" onclick="setCategory('teak_fire')" data-cat="teak_fire" role="tab" class="cat-tab px-5 py-3.5 rounded-t-xl text-sm sm:text-base font-medium whitespace-nowrap border-b-2 border-transparent text-slate hover:text-pearl transition-colors">
+                    من نار خشب الساج
+                </button>
+                <button type="button" onclick="setCategory('main_sea')" data-cat="main_sea" role="tab" class="cat-tab px-5 py-3.5 rounded-t-xl text-sm sm:text-base font-medium whitespace-nowrap border-b-2 border-transparent text-slate hover:text-pearl transition-colors">
+                    أطباق البحر الرئيسية
+                </button>
+                <button type="button" onclick="setCategory('coastal_sweets')" data-cat="coastal_sweets" role="tab" class="cat-tab px-5 py-3.5 rounded-t-xl text-sm sm:text-base font-medium whitespace-nowrap border-b-2 border-transparent text-slate hover:text-pearl transition-colors">
+                    الحلويات الساحلية
+                </button>
+            </div>
+
+            <!-- شبكة عرض الأطباق -->
+            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- يتم توليد البطاقات ديناميكياً -->
+            </div>
+
+            <!-- شريط تلخيص التفضيلات المختارة -->
+            <div class="mt-10 p-5 rounded-2xl bg-basalt/75 border border-foam/35 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 text-sm text-pearl/90">
+                    <span class="w-2.5 h-2.5 rounded-full bg-copper shrink-0"></span>
+                    <p>أضف أطباقك المفضلة إلى «تفضيلات الطاولة» ليتم إرفاقها تلقائياً بملاحظات حجزك.</p>
+                </div>
+                <button type="button" onclick="toggleDrawer()" class="px-5 py-2.5 rounded-xl bg-abyss hover:bg-abyss-deep border border-copper/45 text-copper text-xs font-bold shrink-0 transition-colors">
+                    عرض تفضيلات الطاولة (<span id="inline-cart-count">0</span>)
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. نظام حجز الطاولات التفاعلي + بطاقة الدعوة النحاسية ثلاثية الأبعاد -->
+    <section id="reservation" class="py-24 pearl-sand-texture text-abyss border-t border-abyss/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="max-w-2xl mb-14">
+                <span class="text-xs font-bold tracking-widest text-copper-dark uppercase block mb-3">تجربة الاستقبال</span>
+                <h2 class="font-serif text-4xl sm:text-5xl font-bold text-abyss mb-4">
+                    حجز طاولة في بحر
+                </h2>
+                <p class="text-abyss/80 text-base sm:text-lg">
+                    اختر المنطقة المعمارية المناسبة لأمسيتك، وعاين بطاقة الدعوة النحاسية الخاصة بك مباشرة قبل التأكيد.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- نموذج الحجز (7 أعمدة) -->
+                <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="lg:col-span-7 bg-white/85 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-abyss/15 shadow-sm space-y-8">
+                    
+                    <!-- التاريخ وعداد الضيوف (1 إلى 10) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="res-date" class="block text-sm font-bold text-abyss mb-2">تاريخ الزيارة</label>
+                            <input type="date" id="res-date" required onchange="updatePreview()" class="w-full px-4 py-3 rounded-xl bg-sand/50 border border-abyss/20 text-abyss font-medium focus:outline-none focus:border-copper-dark">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-abyss mb-2">عدد الضيوف (١ – ١٠)</label>
+                            <div class="flex items-center justify-between px-3 py-1.5 rounded-xl bg-sand/50 border border-abyss/20">
+                                <button type="button" onclick="stepGuests(-1)" aria-label="تقليل عدد الضيوف" class="w-10 h-10 rounded-lg bg-abyss text-pearl hover:bg-basalt font-bold text-lg flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper">
+                                    −
+                                </button>
+                                <div class="text-center">
+                                    <span id="guest-count-display" class="font-serif text-2xl font-bold text-abyss">٢</span>
+                                    <span class="text-xs text-abyss/70 block">ضيوف</span>
+                                </div>
+                                <button type="button" onclick="stepGuests(1)" aria-label="زيادة عدد الضيوف" class="w-10 h-10 rounded-lg bg-abyss text-pearl hover:bg-basalt font-bold text-lg flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper">
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- الفترة (غداء الساحل / عشاء الغسق) والوقت -->
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                            <label class="text-sm font-bold text-abyss">الفترة والوقت المتاح</label>
+                            <div class="inline-flex rounded-xl bg-sand p-1 border border-abyss/15">
+                                <button type="button" onclick="selectPeriod('lunch')" id="period-lunch" class="px-4 py-1.5 rounded-lg text-xs font-bold text-abyss/70 transition-colors">
+                                    غداء الساحل
+                                </button>
+                                <button type="button" onclick="selectPeriod('dinner')" id="period-dinner" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-abyss text-pearl transition-colors">
+                                    عشاء الغسق
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="time-slots" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                            <!-- يتم توليد الأوقات برمجياً -->
+                        </div>
+                    </div>
+
+                    <!-- مناطق الجلوس المعمارية الثلاث -->
+                    <div>
+                        <label class="block text-sm font-bold text-abyss mb-3">المنطقة المعمارية</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <button type="button" onclick="selectSeating('شرفة الحوض العاكس')" data-seat="شرفة الحوض العاكس" class="seat-btn text-right p-4 rounded-xl border-2 border-abyss bg-abyss text-pearl transition-all">
+                                <span class="block font-bold text-sm mb-1 text-copper">شرفة الحوض العاكس</span>
+                                <span class="block text-xs text-slate leading-relaxed">إطلالة مباشرة بمحاذاة الماء ونسيم البحر المفتوح.</span>
+                            </button>
+
+                            <button type="button" onclick="selectSeating('قاعة الحجر المنحوت')" data-seat="قاعة الحجر المنحوت" class="seat-btn text-right p-4 rounded-xl border border-abyss/15 bg-sand/40 text-abyss hover:border-abyss transition-all">
+                                <span class="block font-bold text-sm mb-1">قاعة الحجر المنحوت</span>
+                                <span class="block text-xs text-abyss/70 leading-relaxed">سكينة معمارية محاطة بجدران البازلت والرمل اللؤلؤي.</span>
+                            </button>
+
+                            <button type="button" onclick="selectSeating('طاولة الشيف المفتوحة')" data-seat="طاولة الشيف المفتوحة" class="seat-btn text-right p-4 rounded-xl border border-abyss/15 bg-sand/40 text-abyss hover:border-abyss transition-all">
+                                <span class="block font-bold text-sm mb-1">طاولة الشيف المفتوحة</span>
+                                <span class="block text-xs text-abyss/70 leading-relaxed">تجربة تذوق تفاعلية أمام موقد خشب الساج.</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- بيانات الضيف -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-abyss/10">
+                        <div>
+                            <label for="guest-name" class="block text-xs font-bold text-abyss mb-1.5">الاسم الكامل *</label>
+                            <input type="text" id="guest-name" required placeholder="مثال: طارق المنصور" oninput="updatePreview()" class="w-full px-4 py-3 rounded-xl bg-sand/40 border border-abyss/20 text-abyss text-sm focus:outline-none focus:border-copper-dark">
+                        </div>
+                        <div>
+                            <label for="guest-phone" class="block text-xs font-bold text-abyss mb-1.5">رقم الجوال *</label>
+                            <input type="tel" id="guest-phone" required placeholder="05X XXX XXXX" oninput="updatePreview()" class="w-full px-4 py-3 rounded-xl bg-sand/40 border border-abyss/20 text-abyss text-sm text-left dir-ltr focus:outline-none focus:border-copper-dark">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="guest-notes" class="block text-xs font-bold text-abyss mb-1.5">ملاحظات الضيافة وتفضيلات الأطباق</label>
+                        <textarea id="guest-notes" rows="2" placeholder="احتفال خاص، حساسية من مكون معين، أو الأطباق المنقولة من تفضيلات الطاولة..." class="w-full px-4 py-3 rounded-xl bg-sand/40 border border-abyss/20 text-abyss text-sm focus:outline-none focus:border-copper-dark"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 rounded-xl bg-abyss hover:bg-basalt text-pearl font-bold text-base transition-colors shadow-xl flex items-center justify-center gap-2">
+                        <span>تأكيد الحجز وإصدار بطاقة الدعوة</span>
+                        <span class="text-copper">←</span>
+                    </button>
+                </form>
+
+                <!-- معاينة حية لبطاقة الدعوة النحاسية ثلاثية الأبعاد (5 أعمدة) -->
+                <div class="lg:col-span-5 lg:sticky lg:top-28 invitation-tilt-wrap">
+                    <div id="invitation-card-3d" class="invitation-card-3d rounded-3xl bg-abyss text-pearl p-7 sm:p-8 border border-copper/45 shadow-2xl relative overflow-hidden">
+                        <!-- شريط علوي نحاسي -->
+                        <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-l from-copper via-foam-light to-copper"></div>
+
+                        <!-- طبقة لمعان ضوئي تتبع المؤشر -->
+                        <div id="card-specular-sheen" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300" style="background: radial-gradient(circle at 50% 50%, rgba(200,138,85,0.22), transparent 65%);"></div>
+
+                        <div class="flex items-center justify-between pb-6 border-b border-pearl/15 relative z-10">
+                            <div>
+                                <span class="text-[11px] text-copper tracking-widest uppercase block">بطاقة دعوة معمارية</span>
+                                <h3 class="font-serif text-3xl font-bold mt-1 text-pearl">بحر • BAHR</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-basalt border border-copper/45 flex items-center justify-center font-serif text-2xl text-copper">
+                                ب
+                            </div>
+                        </div>
+
+                        <div class="py-6 space-y-4 text-sm relative z-10">
+                            <div class="flex justify-between items-center py-2 border-b border-pearl/10">
+                                <span class="text-slate">الضيف الكريم</span>
+                                <span id="prev-name" class="font-bold text-pearl">بانتظار إدخال الاسم</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-pearl/10">
+                                <span class="text-slate">التاريخ</span>
+                                <span id="prev-date" class="font-bold text-copper font-mono">—</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-pearl/10">
+                                <span class="text-slate">الموعد والفترة</span>
+                                <span id="prev-time" class="font-bold text-pearl">٠٨:٣٠ م (عشاء الغسق)</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-pearl/10">
+                                <span class="text-slate">عدد الضيوف</span>
+                                <span id="prev-guests" class="font-bold text-pearl">٢ ضيوف</span>
+                            </div>
+                            <div class="flex justify-between items-start py-2 border-b border-pearl/10 gap-4">
+                                <span class="text-slate shrink-0">المنطقة المختارة</span>
+                                <span id="prev-seat" class="font-bold text-foam-light text-left">شرفة الحوض العاكس</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-slate">تفضيلات الطاولة المرفقة</span>
+                                <span id="prev-dishes" class="font-bold text-copper">٠ أطباق</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-basalt/85 border border-foam/35 text-xs text-slate leading-relaxed flex items-start gap-3 relative z-10">
+                            <span class="text-copper text-base leading-none">✦</span>
+                            <p>تُحفظ الطاولة لمدة ١٥ دقيقة من موعد الحجز. يُستقبل الضيوف عند ممر البازلت المطل على حوض الماء.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- التذييل (Footer) -->
+    <footer class="bg-abyss-deep text-slate border-t border-pearl/10 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 pb-12 border-b border-pearl/10">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="font-serif text-3xl font-bold text-pearl">بحر</span>
+                        <span class="text-xs text-copper tracking-widest uppercase">BAHR COASTAL</span>
+                    </div>
+                    <p class="text-sm leading-relaxed max-w-xs text-slate/80">
+                        عمارة ساحلية هادئة تحتفي بصفاء المحار اللؤلؤي، صلابة البازلت، ودفء نار خشب الساج.
+                    </p>
+                </div>
+
+                <div class="space-y-2.5 text-sm">
+                    <h4 class="font-bold text-pearl text-base mb-3">العنوان وأوقات الاستقبال</h4>
+                    <p>الكورنيش الجنوبي، الواجهة المعمارية</p>
+                    <p>غداء الساحل: ١٢:٣٠ ظهراً – ٤:٣٠ عصراً</p>
+                    <p>عشاء الغسق: ٧:٠٠ مساءً – ١٢:٠٠ منتصف الليل</p>
+                </div>
+
+                <div class="space-y-2.5 text-sm">
+                    <h4 class="font-bold text-pearl text-base mb-3">مكتب الضيافة</h4>
+                    <p>الهاتف الموحد: <span dir="ltr">9200 18490</span></p>
+                    <p>البريد: concierge@bahr-dining.com</p>
+                    <p class="text-xs text-foam-light pt-2">تتوفر خدمة صف السيارات الخاصة عند المدخل الرئيسي.</p>
+                </div>
+            </div>
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate/50 gap-4">
+                <p>© ٢٠٢٦ مطعم بحر. جميع الحقوق محفوظة.</p>
+                <p>بازلت ساحلي • رمل لؤلؤي • نحاس بحري</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- اللوحة الجانبية لتفضيلات الطاولة (Slide-Over Drawer) -->
+    <div id="table-drawer" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div onclick="toggleDrawer()" class="absolute inset-0 bg-abyss-deep/80 backdrop-blur-sm transition-opacity"></div>
+        
+        <aside id="drawer-panel" class="absolute top-0 left-0 bottom-0 w-full max-w-md bg-abyss border-r border-copper/35 shadow-2xl flex flex-col justify-between p-6">
+            <div>
+                <div class="flex items-center justify-between pb-5 border-b border-pearl/15">
+                    <div>
+                        <h3 class="font-serif text-2xl font-bold text-pearl">تفضيلات الطاولة</h3>
+                        <p class="text-xs text-slate mt-0.5">الأطباق المختارة لإرفاقها بملاحظات الحجز</p>
+                    </div>
+                    <button type="button" onclick="toggleDrawer()" aria-label="إغلاق اللوحة" class="p-2 rounded-xl bg-basalt text-pearl hover:text-copper transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="cart-items-container" class="py-6 space-y-3.5 max-h-[58vh] overflow-y-auto">
+                    <!-- العناصر المختارة -->
+                </div>
+            </div>
+
+            <div class="pt-5 border-t border-pearl/15 space-y-4">
+                <div class="flex items-center justify-between text-base">
+                    <span class="text-slate">المجموع التقديري</span>
+                    <span id="cart-total" class="font-serif text-2xl font-bold text-copper">٠ ر.س</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" onclick="clearCart()" class="py-3 rounded-xl border border-pearl/20 text-slate hover:text-pearl text-sm font-medium transition-colors">
+                        إفراغ القائمة
+                    </button>
+                    <button type="button" onclick="transferPreferencesToNotes()" class="py-3 rounded-xl bg-copper hover:bg-copper-light text-abyss font-bold text-sm text-center transition-colors">
+                        نقل إلى ملاحظات الحجز
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- نافذة تفاصيل الطبق والمصدر البحري (Dish Inspector Modal) -->
+    <div id="dish-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div onclick="closeDishModal()" class="absolute inset-0 bg-abyss-deep/85 backdrop-blur-sm"></div>
+        <div id="dish-modal-box" class="relative w-full max-w-lg rounded-3xl bg-sand text-abyss p-6 sm:p-8 shadow-2xl border border-copper">
+            <button type="button" onclick="closeDishModal()" aria-label="إغلاق التفاصيل" class="absolute top-5 left-5 p-2 rounded-xl bg-abyss/10 hover:bg-abyss/20 text-abyss transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div id="dish-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد الحجز وإصدار الرمز المعماري (Confirmation Modal) -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div onclick="closeConfirmModal()" class="absolute inset-0 bg-abyss-deep/85 backdrop-blur-sm"></div>
+        <div id="confirm-modal-box" class="relative w-full max-w-md rounded-3xl bg-abyss text-pearl p-7 sm:p-8 border border-copper shadow-2xl text-center space-y-6 overflow-hidden">
+            <div id="confirm-stamp-badge" class="w-16 h-16 rounded-2xl bg-copper/15 border-2 border-copper text-copper flex items-center justify-center mx-auto">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            
+            <div class="space-y-2">
+                <span class="text-xs font-bold tracking-widest text-copper uppercase">تم اعتماد الدعوة</span>
+                <h3 class="font-serif text-3xl font-bold">أهلاً بك في بحر</h3>
+                <p id="confirm-subtitle" class="text-sm text-slate"></p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-basalt border border-copper/45 space-y-2 relative overflow-hidden">
+                <span class="text-xs text-slate block">رمز الحجز المعماري</span>
+                <div class="flex items-center justify-center gap-3">
+                    <span id="booking-ref-code" class="font-mono text-2xl font-bold text-copper tracking-wider">BHR-8492</span>
+                    <button type="button" onclick="copyRefCode()" class="px-3 py-1.5 rounded-lg bg-pearl/10 hover:bg-pearl/20 text-xs font-medium text-pearl transition-colors">
+                        نسخ رمز الحجز
+                    </button>
+                </div>
+            </div>
+
+            <div id="confirm-summary" class="text-xs text-pearl/90 space-y-2 text-right bg-basalt/55 p-4 rounded-2xl border border-pearl/10"></div>
+
+            <button type="button" onclick="closeConfirmModal()" class="w-full py-3.5 rounded-xl bg-copper hover:bg-copper-light text-abyss font-bold text-sm transition-colors">
+                إتمام والعودة
+            </button>
+        </div>
+    </div>
+
+    <!-- إشعار عائم (Toast) -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 translate-y-24 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="px-5 py-3.5 rounded-xl bg-sand text-abyss font-medium text-sm shadow-2xl border-r-4 border-copper flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-copper"></span>
+            <span id="toast-message">تم التحديث</span>
+        </div>
+    </div>
+
+    <!-- المحرك الحركي الموحد: GSAP + ScrollTrigger + Canvas 2D Caustics & Halftone Trail + Damped Orbit -->
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        /* ==========================================================================
+           1. إدارة حالة تقليل الحركة المتدرج (Tiered Reduced Motion & URL Harness)
+           ========================================================================== */
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceReduce = urlParams.get('reduce') === '1';
+        const seekTimeParam = urlParams.get('t');
+        const mediaReduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        
+        let isReducedMotion = forceReduce || mediaReduceQuery.matches;
+        let heroIntroTimeline = null;
+
+        function applyMotionTierState() {
+            const htmlEl = document.documentElement;
+            const toggleBtn = document.getElementById('calm-motion-toggle');
+            const labelEl = document.getElementById('calm-motion-label');
+            const dotEl = document.getElementById('calm-indicator-dot');
+
+            if (isReducedMotion) {
+                htmlEl.classList.add('reduced-motion');
+                if (toggleBtn) toggleBtn.setAttribute('aria-pressed', 'true');
+                if (labelEl) labelEl.textContent = 'تفعيل الحركة';
+                if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-copper';
+
+                // تثبيت زاوية ثلاثية الأرباع مصممة مسبقاً في وضع السكون
+                targetOrbit = { x: 0.32, y: -0.22 };
+                currentOrbit = { x: 0.32, y: -0.22 };
+                applyOrbitTransforms();
+                syncCompassSliders();
+
+                // إعادة ضبط بطاقة الدعوة ثلاثية الأبعاد
+                const card3d = document.getElementById('invitation-card-3d');
+                if (card3d) card3d.style.transform = 'none';
+
+                // رسم إطار ساكن نظيف على Canvas
+                renderHeroCanvas(0, true);
+            } else {
+                htmlEl.classList.remove('reduced-motion');
+                if (toggleBtn) toggleBtn.setAttribute('aria-pressed', 'false');
+                if (labelEl) labelEl.textContent = 'تهدئة الحركة';
+                if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-foam-light';
+            }
+        }
+
+        function toggleCalmMotion() {
+            isReducedMotion = !isReducedMotion;
+            applyMotionTierState();
+            showToast(isReducedMotion ? 'تم تفعيل وضع السكون المعماري' : 'تم تفعيل الحركة التفاعلية الكاملة');
+        }
+
+        mediaReduceQuery.addEventListener('change', (e) => {
+            if (!forceReduce) {
+                isReducedMotion = e.matches;
+                applyMotionTierState();
+            }
+        });
+
+        /* ==========================================================================
+           2. محرك المدار البصري ثلاثي الأبعاد وبوصلة المنظور (Damped 0.055 at 60Hz)
+           ========================================================================== */
+        const heroSection = document.getElementById('hero');
+        const parallaxLayers = document.querySelectorAll('.parallax-layer');
+        
+        let targetOrbit = isReducedMotion ? { x: 0.32, y: -0.22 } : { x: 0, y: 0 };
+        let currentOrbit = { ...targetOrbit };
+        let manualCompassActive = false;
+
+        function round3(val) {
+            return Math.round(val * 1000) / 1000;
+        }
+
+        function applyOrbitTransforms() {
+            const cx = round3(currentOrbit.x);
+            const cy = round3(currentOrbit.y);
+
+            parallaxLayers.forEach(layer => {
+                const depth = parseFloat(layer.dataset.depth || 20);
+                const moveX = round3(cx * depth);
+                const moveY = round3(cy * depth);
+                const rotateY = round3(cx * 4.2);
+                const rotateX = round3(-cy * 4.2);
+
+                layer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+        }
+
+        // التحكم ببوصلة المنظور القابلة للطي
+        function toggleCompassPanel() {
+            const panel = document.getElementById('perspective-compass-panel');
+            const btn = document.getElementById('compass-toggle-btn');
+            const chevron = document.getElementById('compass-chevron');
+            const isHidden = panel.classList.contains('hidden');
+
+            panel.classList.toggle('hidden');
+            btn.setAttribute('aria-expanded', String(isHidden));
+            chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        function syncCompassSliders() {
+            const sx = document.getElementById('compass-x');
+            const sy = document.getElementById('compass-y');
+            const vx = document.getElementById('compass-x-val');
+            const vy = document.getElementById('compass-y-val');
+            if (sx && sy) {
+                sx.value = round3(targetOrbit.x);
+                sy.value = round3(targetOrbit.y);
+                vx.textContent = Number(sx.value).toFixed(2);
+                vy.textContent = Number(sy.value).toFixed(2);
+            }
+        }
+
+        function onCompassSliderChange() {
+            manualCompassActive = true;
+            const sx = parseFloat(document.getElementById('compass-x').value);
+            const sy = parseFloat(document.getElementById('compass-y').value);
+            document.getElementById('compass-x-val').textContent = sx.toFixed(2);
+            document.getElementById('compass-y-val').textContent = sy.toFixed(2);
+
+            targetOrbit.x = sx;
+            targetOrbit.y = sy;
+
+            if (isReducedMotion) {
+                currentOrbit = { ...targetOrbit };
+                applyOrbitTransforms();
+            }
+        }
+
+        function resetOrbit() {
+            manualCompassActive = false;
+            targetOrbit = isReducedMotion ? { x: 0.32, y: -0.22 } : { x: 0, y: 0 };
+            syncCompassSliders();
+            if (isReducedMotion) {
+                currentOrbit = { ...targetOrbit };
+                applyOrbitTransforms();
+            }
+        }
+
+        if (heroSection) {
+            heroSection.addEventListener('mousemove', (e) => {
+                if (isReducedMotion || manualCompassActive) return;
+                const rect = heroSection.getBoundingClientRect();
+                const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                const normY = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+                targetOrbit.x = Math.max(-1, Math.min(1, normX));
+                targetOrbit.y = Math.max(-1, Math.min(1, normY));
+                syncCompassSliders();
+            });
+
+            heroSection.addEventListener('mouseleave', () => {
+                if (isReducedMotion || manualCompassActive) return;
+                targetOrbit.x = 0;
+                targetOrbit.y = 0;
+                syncCompassSliders();
+            });
+        }
+
+        /* ==========================================================================
+           3. محرك Canvas 2D: انعكاسات الماء الضوئية (Caustics) + الشبكة المتلألئة
+           ========================================================================== */
+        const heroCanvas = document.getElementById('hero-caustic-canvas');
+        const ctx = heroCanvas ? heroCanvas.getContext('2d') : null;
+        let isHeroVisible = true;
+        let trailParticles = [];
+        let lastFrameTime = performance.now();
+        let ambientPhase = 0;
+
+        const supportsFinePointer = window.matchMedia('(pointer: fine)').matches;
+
+        function resizeHeroCanvas() {
+            if (!heroCanvas || !heroSection || !ctx) return;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const rect = heroSection.getBoundingClientRect();
+            heroCanvas.width = rect.width * dpr;
+            heroCanvas.height = rect.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            if (isReducedMotion) {
+                renderHeroCanvas(0, true);
+            }
+        }
+
+        window.addEventListener('resize', resizeHeroCanvas);
+
+        if ('IntersectionObserver' in window && heroSection) {
+            const visObserver = new IntersectionObserver((entries) => {
+                isHeroVisible = entries[0].isIntersecting;
+            }, { threshold: 0.05 });
+            visObserver.observe(heroSection);
+        }
+
+        if (heroSection && supportsFinePointer) {
+            heroSection.addEventListener('mousemove', (e) => {
+                if (isReducedMotion) return;
+                const rect = heroSection.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                trailParticles.push({
+                    x,
+                    y,
+                    life: 1.0,
+                    shimmerPhase: Math.random() * Math.PI * 2
+                });
+                if (trailParticles.length > 22) trailParticles.shift();
+            });
+        }
+
+        function renderHeroCanvas(dt, staticSnapshot = false) {
+            if (!ctx || !heroCanvas || !heroSection) return;
+            const width = heroSection.clientWidth;
+            const height = heroSection.clientHeight;
+            ctx.clearRect(0, 0, width, height);
+
+            if (!staticSnapshot) {
+                ambientPhase += dt * 1.1;
+            }
+
+            // أ) تموجات الضوء المائي السفلية (Underwater Caustics & Tide Ripples)
+            const poolTop = height * 0.62;
+            const waveCount = 6;
+            for (let i = 0; i < waveCount; i++) {
+                const ratio = i / waveCount;
+                const yBase = poolTop + ratio * (height - poolTop);
+                ctx.beginPath();
+                for (let x = 0; x <= width; x += 36) {
+                    const waveY = yBase + 
+                        Math.sin(x * 0.006 + ambientPhase + i * 1.3) * (6 + ratio * 8) +
+                        Math.cos(x * 0.014 - ambientPhase * 0.8) * 3;
+                    if (x === 0) ctx.moveTo(x, waveY);
+                    else ctx.lineTo(x, waveY);
+                }
+                ctx.strokeStyle = i % 2 === 0 
+                    ? `rgba(200, 138, 85, ${(0.04 + ratio * 0.06).toFixed(3)})`
+                    : `rgba(74, 107, 124, ${(0.06 + ratio * 0.08).toFixed(3)})`;
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+            }
+
+            // ب) الشبكة النقطية الضوئية المتلألئة مع أثر المؤشر (Halftone Dot-Grid Cursor Trail)
+            if (!staticSnapshot) {
+                for (let i = trailParticles.length - 1; i >= 0; i--) {
+                    trailParticles[i].life -= dt * 1.65;
+                    if (trailParticles[i].life <= 0) trailParticles.splice(i, 1);
+                }
+            }
+
+            const spacing = 36;
+            const influenceRadius = 185;
+            const influenceSq = influenceRadius * influenceRadius;
+
+            for (let gx = spacing * 0.5; gx < width; gx += spacing) {
+                for (let gy = spacing * 0.5; gy < height; gy += spacing) {
+                    let intensity = 0;
+                    let shimmer = 0;
+
+                    if (!staticSnapshot && trailParticles.length > 0) {
+                        for (let p = 0; p < trailParticles.length; p++) {
+                            const pt = trailParticles[p];
+                            const dx = gx - pt.x;
+                            const dy = gy - pt.y;
+                            const dSq = dx * dx + dy * dy;
+                            if (dSq < influenceSq) {
+                                const factor = (1 - Math.sqrt(dSq) / influenceRadius) * pt.life;
+                                if (factor > intensity) {
+                                    intensity = factor;
+                                    shimmer = Math.sin(ambientPhase * 5 + pt.shimmerPhase + gx * 0.05);
+                                }
+                            }
+                        }
+                    }
+
+                    const radius = 0.8 + intensity * 2.8;
+                    ctx.beginPath();
+                    ctx.arc(gx, gy, radius, 0, Math.PI * 2);
+
+                    if (intensity > 0.04) {
+                        // وميض لوني متناوب بين اللؤلؤي الأبيض والنحاس الدافئ
+                        if (shimmer > 0.25) {
+                            ctx.fillStyle = `rgba(244, 239, 230, ${(0.25 + intensity * 0.65).toFixed(2)})`;
+                        } else {
+                            ctx.fillStyle = `rgba(200, 138, 85, ${(0.22 + intensity * 0.65).toFixed(2)})`;
+                        }
+                    } else {
+                        ctx.fillStyle = 'rgba(159, 177, 190, 0.11)';
+                    }
+                    ctx.fill();
+                }
+            }
+        }
+
+        // حلقة التحريك الموحدة المستقلة عن معدل الإطارات (Frame-rate Independent Damping)
+        function masterAnimationLoop(now) {
+            const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
+            lastFrameTime = now;
+
+            if (isHeroVisible && !document.hidden) {
+                if (!isReducedMotion) {
+                    const alpha = 1 - Math.pow(1 - 0.055, dt * 60);
+                    currentOrbit.x += (targetOrbit.x - currentOrbit.x) * alpha;
+                    currentOrbit.y += (targetOrbit.y - currentOrbit.y) * alpha;
+                    applyOrbitTransforms();
+                    renderHeroCanvas(dt, false);
+                }
+            }
+
+            requestAnimationFrame(masterAnimationLoop);
+        }
+
+        /* ==========================================================================
+           4. تصميم الحركات المعمارية عبر GSAP & ScrollTrigger
+           ========================================================================== */
+        function initGSAPChoreography() {
+            // 1. التسلسل الافتتاحي للواجهة (Hero Architectural Reveal Timeline)
+            heroIntroTimeline = gsap.timeline({ paused: true });
+
+            heroIntroTimeline
+                .from('#hero-arch-frame', {
+                    clipPath: 'inset(18% 12% 18% 12% round 1.5rem)',
+                    scale: 1.04,
+                    opacity: 0,
+                    duration: 1.15,
+                    ease: 'power3.out'
+                }, 0)
+                .from('.hero-stagger', {
+                    y: 26,
+                    opacity: 0,
+                    duration: 0.85,
+                    stagger: 0.11,
+                    ease: 'power3.out'
+                }, 0.15)
+                .from('#hero-horizon-line', {
+                    scaleX: 0,
+                    duration: 0.9,
+                    ease: 'power2.out'
+                }, 0.35)
+                .to('#hero-emblem', {
+                    backgroundPosition: '200% center',
+                    duration: 1.8,
+                    ease: 'power1.inOut'
+                }, 0.4)
+                .from('.hero-float-badge', {
+                    y: 18,
+                    opacity: 0,
+                    duration: 0.75,
+                    stagger: 0.15,
+                    ease: 'power2.out'
+                }, 0.55);
+
+            // دعم معامل الاختبار ?t=N أو تقليل الحركة
+            if (seekTimeParam !== null && !isNaN(parseFloat(seekTimeParam))) {
+                heroIntroTimeline.seek(parseFloat(seekTimeParam)).pause();
+            } else if (isReducedMotion) {
+                heroIntroTimeline.progress(1).pause();
+            } else {
+                heroIntroTimeline.play();
+            }
+
+            // 2. مقياس عمق المد والجزر عند التمرير (Tide Depth Progress Gauge)
+            ScrollTrigger.create({
+                trigger: document.body,
+                start: 'top top',
+                end: 'bottom bottom',
+                onUpdate: (self) => {
+                    const bar = document.getElementById('tide-progress-bar');
+                    const readout = document.getElementById('tide-depth-readout');
+                    if (bar) bar.style.transform = `scaleY(${self.progress.toFixed(3)})`;
+                    if (readout) {
+                        const meters = Math.round(self.progress * 42);
+                        readout.textContent = `${String(meters).padStart(2, '0')}m`;
+                    }
+                }
+            });
+
+            // 3. كشف الركائز الحسية الثلاث عند التمرير
+            if (!isReducedMotion) {
+                gsap.from('.arch-header', {
+                    scrollTrigger: {
+                        trigger: '#architecture',
+                        start: 'top 82%',
+                        once: true
+                    },
+                    y: 24,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: 'power2.out'
+                });
+
+                gsap.from('.pillar-card', {
+                    scrollTrigger: {
+                        trigger: '#architecture',
+                        start: 'top 74%',
+                        once: true
+                    },
+                    y: 36,
+                    opacity: 0,
+                    duration: 0.85,
+                    stagger: 0.16,
+                    ease: 'power3.out'
+                });
+            }
+        }
+
+        /* ==========================================================================
+           5. بيانات قائمة الطعام التفاعلية (4 أقسام + فلاتر + معاينة الطبق)
+           ========================================================================== */
+        const menuData = [
+            // القسم 1: المقبلات الباردة والمحار
+            {
+                id: 'oyster-1',
+                category: 'cold_oysters',
+                name: 'محار اللؤلؤ العُماني على الثلج المجروش',
+                price: 96,
+                tags: ['chef', 'gf'],
+                tagLabels: ['توصية الشيف', 'خالي من الغلوتين'],
+                shortDesc: 'ست حبات من المحار الحي الطازج مع خل الكركديه المعتّق، زيت الأعشاب الساحلية، وليمون حامض.',
+                provenance: 'شواطئ عُمان الجنوبية — مياه باردة نقية',
+                tastingNotes: 'ملوحة بحرية صافية متوازنة مع حموضة الكركديه المنعشة ولمسة عشبية ناعمة.',
+                pairing: 'يُقدم مع مشروب نسيم زبد الموج البارد'
+            },
+            {
+                id: 'oyster-2',
+                category: 'cold_oysters',
+                name: 'كارباتشيو القاروص بالليمون الحساوي',
+                price: 78,
+                tags: ['chef', 'gf'],
+                tagLabels: ['توصية الشيف', 'خالي من الغلوتين'],
+                shortDesc: 'شرائح قاروص البحر الأحمر الرقيقة متبلة بزيت الزيتون البكر، اللومي المجفف، وبذور الكزبرة.',
+                provenance: 'الخليج العربي والبحر الأحمر — صيد الفجر',
+                tastingNotes: 'قوام مخملي ناعم يذوب برقة مع عطر الليمون الأسود والزيت البكر.',
+                pairing: 'يتكامل مع سلطة الرجلة والرمان البري'
+            },
+            {
+                id: 'oyster-3',
+                category: 'cold_oysters',
+                name: 'سلطة الرجلة الساحلية والرمان البري',
+                price: 52,
+                tags: ['veg', 'gf'],
+                tagLabels: ['نباتي', 'خالي من الغلوتين'],
+                shortDesc: 'أوراق الرجلة البرية مع حبوب الرمان الطازجة، الجوز المحمص، وتتبيلة دبس التمر المكرمل.',
+                provenance: 'مزارع الساحل العضوية المحلية',
+                tastingNotes: 'توازن حيوي بين قرمشة الأوراق الطازجة وحلاوة التمر الخفيفة.',
+                pairing: 'مقدمة مثالية قبل أطباق نار خشب الساج'
+            },
+            {
+                id: 'oyster-4',
+                category: 'cold_oysters',
+                name: 'تارتار التونة الصفراء بالأفوكادو والسمسم',
+                price: 84,
+                tags: ['gf'],
+                tagLabels: ['خالي من الغلوتين'],
+                shortDesc: 'مكعبات تونة الزعنفة الصفراء الطازجة مع هريس الأفوكادو، سمسم محمص، وصلصة الحمضيات.',
+                provenance: 'مياه بحر العرب العميقة',
+                tastingNotes: 'نكهة غنية ومتماسكة مع لمسة مكسرات دافئة من السمسم المحمص.',
+                pairing: 'يُقدم بارداً بدرجة ٤ مئوية'
+            },
+
+            // القسم 2: من نار خشب الساج
+            {
+                id: 'teak-1',
+                category: 'teak_fire',
+                name: 'فيليه هامور الساحل المدخن بخشب الساج',
+                price: 172,
+                tags: ['chef', 'gf'],
+                tagLabels: ['توصية الشيف', 'خالي من الغلوتين'],
+                shortDesc: 'فيليه هامور مقرمش الجلد مشوي فوق جمر الساج مع صلصة التمر الهندي وأرز الصيادية.',
+                provenance: 'الخليج العربي — قوارب الصيد التقليدية',
+                tastingNotes: 'قشرة ذهبية مقرمشة تحتفظ بعصارة السمك الطرية مع عبير خشب الساج.',
+                pairing: 'يُقدم مع صلصة الحمر الساحلية الدافئة'
+            },
+            {
+                id: 'teak-2',
+                category: 'teak_fire',
+                name: 'أخطبوط مشوي على حجر البازلت الساخن',
+                price: 146,
+                tags: ['chef', 'gf'],
+                tagLabels: ['توصية الشيف', 'خالي من الغلوتين'],
+                shortDesc: 'أخطبوط مطهو ببطء ثم محمر على اللهب المباشر مع مهروس البطاطس المدخنة وزيت الفلفل.',
+                provenance: 'سواحل عُمان — مصيد مستدام',
+                tastingNotes: 'طراوة فائقة مع حواف مشوية مقرمشة ونكهة مدخنة متوازنة.',
+                pairing: 'يتناغم مع متبل الباذنجان المشوي'
+            },
+            {
+                id: 'teak-3',
+                category: 'teak_fire',
+                name: 'روبيان جامبو بالسماق والزبدة البنية',
+                price: 158,
+                tags: ['gf'],
+                tagLabels: ['خالي من الغلوتين'],
+                shortDesc: 'روبيان ملكي مشوي على الفحم مع السماق البلدي، الثوم المشوي، وزبدة الأعشاب المملحة.',
+                provenance: 'مياه الخليج العربي الشمالية',
+                tastingNotes: 'حلاوة الروبيان الطبيعية مع حموضة السماق وعطر الزبدة المحمصة.',
+                pairing: 'يُقدم مع ليمون مشوي على الجمر'
+            },
+            {
+                id: 'teak-4',
+                category: 'teak_fire',
+                name: 'قرنبيط الساحل المشوي بالطحينة الحجرية',
+                price: 86,
+                tags: ['veg', 'gf'],
+                tagLabels: ['نباتي', 'خالي من الغلوتين'],
+                shortDesc: 'زهرة قرنبيط كاملة مشوية على نار الساج مع طحينة السمسم المحمص، الصنوبر، والرمان.',
+                provenance: 'مزارع محلية عضوية',
+                tastingNotes: 'قوام مشوي غني مع نعومة الطحينة وقرمشة الصنوبر الذهبي.',
+                pairing: 'طبق نباتي رئيسي متكامل'
+            },
+
+            // القسم 3: أطباق البحر الرئيسية
+            {
+                id: 'main-1',
+                category: 'main_sea',
+                name: 'سيباس كامل في قشرة الملح البحري والأعشاب',
+                price: 220,
+                tags: ['chef', 'gf'],
+                tagLabels: ['توصية الشيف', 'خالي من الغلوتين'],
+                shortDesc: 'مخبوز داخل قشرة من ملح البحر وإكليل الجبل لحفظ العصارة، يُكسر ويُقدم بجانب طاولتك (لشخصين).',
+                provenance: 'البحر الأحمر — صيد انتقائي',
+                tastingNotes: 'أنقى صورة لنكهة السمك الطازج المطهو بالبخار الذاتي داخل قشرة الملح.',
+                pairing: 'يُقدم مع خضروات الساحل الجذرية المشوية'
+            },
+            {
+                id: 'main-2',
+                category: 'main_sea',
+                name: 'ريزوتو حبر الحبار والاسكالوب المحمر',
+                price: 156,
+                tags: ['chef', 'gf'],
+                tagLabels: ['توصية الشيف', 'خالي من الغلوتين'],
+                shortDesc: 'أرز أربوريو مطهو بمرق القشريات وحبر الحبار الأسود، تعلوه قطع اسكالوب محمرة بالزبدة.',
+                provenance: 'استيراد بحري مبرد يومياً',
+                tastingNotes: 'كريمي عميق بنكهة البحر الغنية مع حلاوة الاسكالوب المحمر.',
+                pairing: 'يُزين بقشر الليمون الأخضر المبشور'
+            },
+            {
+                id: 'main-3',
+                category: 'main_sea',
+                name: 'طاجن الكنعد باللومي والكزبرة الخضراء',
+                price: 162,
+                tags: ['gf'],
+                tagLabels: ['خالي من الغلوتين'],
+                shortDesc: 'شرائح الكنعد الطازجة مطهوة في فخار البازلت مع الطماطم المشوية والليمون الأسود العُماني.',
+                provenance: 'الخليج العربي',
+                tastingNotes: 'مرق عطري دافئ يجمع بين حموضة اللومي ونضارة الكزبرة.',
+                pairing: 'يُقدم مع أرز أبيض مطهو على البخار'
+            },
+            {
+                id: 'main-4',
+                category: 'main_sea',
+                name: 'لينغويني الفطر البري والكمأة الساحلية',
+                price: 118,
+                tags: ['veg'],
+                tagLabels: ['نباتي'],
+                shortDesc: 'باستا طازجة محضرة يدوياً مع تشكيلة فطر بري، مرق الأعشاب، ولمسة من زيت الكمأة.',
+                provenance: 'تحضير يدوي يومي في مطبخ بحر',
+                tastingNotes: 'قوام متماسك غني بعطر الفطر البري والكمأة الدافئة.',
+                pairing: 'يُرش بجبن معتّق اختياري'
+            },
+
+            // القسم 4: الحلويات الساحلية
+            {
+                id: 'sweet-1',
+                category: 'coastal_sweets',
+                name: 'مهلبية المستكة وماء الزهر بالفستق',
+                price: 48,
+                tags: ['chef', 'veg', 'gf'],
+                tagLabels: ['توصية الشيف', 'نباتي', 'خالي من الغلوتين'],
+                shortDesc: 'قوام حريري بارد معطر بالمستكة الطبيعية وماء الزهر، مغطى بالفستق الحلبي المحمص.',
+                provenance: 'وصفة مطبخ بحر الخاصة',
+                tastingNotes: 'خفيفة ومنعشة برائحة الأزهار العطرية وقرمشة الفستق.',
+                pairing: 'مثالية مع القهوة العربية بالهيل'
+            },
+            {
+                id: 'sweet-2',
+                category: 'coastal_sweets',
+                name: 'تارت تمر الخلاص بالملح البحري',
+                price: 54,
+                tags: ['chef', 'veg'],
+                tagLabels: ['توصية الشيف', 'نباتي'],
+                shortDesc: 'عجينة مقرمشة محشوة بكراميل تمر الخلاص الدافئ مع آيس كريم الفانيليا ورقائق الملح البحري.',
+                provenance: 'واحات الأحساء — تمور منتقاة',
+                tastingNotes: 'تباين بديع بين دفء الكراميل وبرودة الفانيليا ولمسة الملح البحري.',
+                pairing: 'تُقدم دافئة فور خروجها من الفرن'
+            },
+            {
+                id: 'sweet-3',
+                category: 'coastal_sweets',
+                name: 'باناكوتا الليمون الحساوي والهيل',
+                price: 46,
+                tags: ['veg', 'gf'],
+                tagLabels: ['نباتي', 'خالي من الغلوتين'],
+                shortDesc: 'كريمة ناعمة بنكهة الهيل الأخضر تعلوها طبقة من هلام الليمون الحساوي المنعش.',
+                provenance: 'مكونات محلية موسمية',
+                tastingNotes: 'حموضة مشرقة توازن نعومة الكريمة وعطر الهيل.',
+                pairing: 'تُقدم مع شاي الأعشاب الساحلي'
+            },
+            {
+                id: 'sweet-4',
+                category: 'coastal_sweets',
+                name: 'شراب غسق النحاس (كركديه ورمان)',
+                price: 38,
+                tags: ['veg', 'gf'],
+                tagLabels: ['نباتي', 'خالي من الغلوتين'],
+                shortDesc: 'منقوع الكركديه العضوي مع عصير الرمان الطازج، الهيل، ورشة ماء الورد المقطر.',
+                provenance: 'ركن المشروبات الحرفية في بحر',
+                tastingNotes: 'منعش، متوازن الحموضة، بلون نحاسي ياقوتي عميق.',
+                pairing: 'يُقدم بارداً في كأس نحاسي مبرد'
+            }
+        ];
+
+        let currentCategory = 'cold_oysters';
+        let currentDietary = 'all';
+        let cart = [];
+
+        function updateDietaryPillPosition(activeBtn) {
+            const pill = document.getElementById('diet-active-pill');
+            if (!pill || !activeBtn) return;
+
+            const left = activeBtn.offsetLeft;
+            const width = activeBtn.offsetWidth;
+
+            if (isReducedMotion) {
+                pill.style.left = `${left}px`;
+                pill.style.width = `${width}px`;
+            } else {
+                gsap.to(pill, {
+                    left: left,
+                    width: width,
+                    duration: 0.42,
+                    ease: 'back.out(1.4)'
+                });
+            }
+        }
+
+        function setDietaryFilter(diet, btnEl) {
+            currentDietary = diet;
+            document.querySelectorAll('.diet-btn').forEach(btn => {
+                if (btn.dataset.diet === diet) {
+                    btn.className = 'diet-btn relative z-10 px-4 py-2 rounded-xl text-xs font-bold text-abyss transition-colors';
+                } else {
+                    btn.className = 'diet-btn relative z-10 px-4 py-2 rounded-xl text-xs font-medium text-slate hover:text-pearl transition-colors';
+                }
+            });
+            updateDietaryPillPosition(btnEl || document.querySelector(`.diet-btn[data-diet="${diet}"]`));
+            renderMenu(true);
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-tab').forEach(btn => {
+                if (btn.dataset.cat === cat) {
+                    btn.className = 'cat-tab px-5 py-3.5 rounded-t-xl text-sm sm:text-base font-bold whitespace-nowrap border-b-2 border-copper text-copper bg-basalt/75 transition-colors';
+                } else {
+                    btn.className = 'cat-tab px-5 py-3.5 rounded-t-xl text-sm sm:text-base font-medium whitespace-nowrap border-b-2 border-transparent text-slate hover:text-pearl transition-colors';
+                }
+            });
+            renderMenu(true);
+        }
+
+        function renderMenu(animateEntry = false) {
+            const grid = document.getElementById('menu-grid');
+            const filtered = menuData.filter(item => {
+                const matchCat = item.category === currentCategory;
+                const matchDiet = currentDietary === 'all' || item.tags.includes(currentDietary);
+                return matchCat && matchDiet;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-14 text-center rounded-2xl bg-basalt/50 border border-pearl/10">
+                        <p class="text-slate text-base">لا توجد أطباق مطابقة لهذا الفلتر في هذا القسم.</p>
+                        <button type="button" onclick="setDietaryFilter('all')" class="mt-3 text-sm text-copper hover:underline font-bold">عرض جميع أطباق القسم</button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const inCart = cart.find(c => c.id === item.id);
+                const qty = inCart ? inCart.qty : 0;
+
+                return `
+                    <article class="menu-item-card p-6 rounded-2xl bg-basalt border border-pearl/10 hover:border-copper/45 transition-colors flex flex-col justify-between gap-6">
+                        <div>
+                            <div class="flex items-start justify-between gap-4 mb-3">
+                                <h3 class="font-serif text-xl sm:text-2xl font-bold text-pearl leading-snug">
+                                    ${item.name}
+                                </h3>
+                                <span class="font-serif text-xl font-bold text-copper shrink-0">${item.price} ر.س</span>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                ${item.tagLabels.map(label => `
+                                    <span class="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-abyss text-foam-light border border-foam/35">
+                                        ${label}
+                                    </span>
+                                `).join('')}
+                            </div>
+
+                            <p class="text-slate text-sm leading-relaxed">
+                                ${item.shortDesc}
+                            </p>
+                        </div>
+
+                        <div class="pt-4 border-t border-pearl/10 flex items-center justify-between gap-3">
+                            <button type="button" onclick="openDishModal('${item.id}')" class="text-xs font-medium text-pearl/85 hover:text-copper transition-colors flex items-center gap-1.5 py-1.5">
+                                <svg class="w-4 h-4 text-foam-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>المصدر وملاحظات التذوق</span>
+                            </button>
+
+                            ${qty === 0 ? `
+                                <button type="button" onclick="addToCart('${item.id}')" class="px-4 py-2 rounded-xl bg-abyss hover:bg-copper text-pearl hover:text-abyss border border-pearl/15 hover:border-copper text-xs font-bold transition-colors">
+                                    + أضف لتفضيلات الطاولة
+                                </button>
+                            ` : `
+                                <div class="flex items-center gap-2 bg-abyss px-2.5 py-1 rounded-xl border border-copper/55">
+                                    <button type="button" onclick="updateCartQty('${item.id}', -1)" aria-label="تقليل الكمية" class="w-6 h-6 rounded-lg bg-basalt text-pearl hover:text-copper font-bold flex items-center justify-center">-</button>
+                                    <span class="text-xs font-bold text-copper min-w-[20px] text-center">${qty}</span>
+                                    <button type="button" onclick="updateCartQty('${item.id}', 1)" aria-label="زيادة الكمية" class="w-6 h-6 rounded-lg bg-basalt text-pearl hover:text-copper font-bold flex items-center justify-center">+</button>
+                                </div>
+                            `}
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            if (animateEntry && !isReducedMotion) {
+                gsap.from('.menu-item-card', {
+                    y: 18,
+                    opacity: 0,
+                    duration: 0.45,
+                    stagger: 0.06,
+                    ease: 'power2.out'
+                });
+            }
+        }
+
+        /* ==========================================================================
+           6. معاين الطبق وسلة تفضيلات الطاولة (Dish Modal & Slide-Over Drawer)
+           ========================================================================== */
+        function openDishModal(id) {
+            const item = menuData.find(d => d.id === id);
+            if (!item) return;
+
+            const content = document.getElementById('dish-modal-content');
+            content.innerHTML = `
+                <div class="space-y-5">
+                    <div class="flex flex-wrap gap-2">
+                        ${item.tagLabels.map(l => `<span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-abyss text-pearl">${l}</span>`).join('')}
+                    </div>
+                    <div>
+                        <h3 class="font-serif text-3xl font-bold text-abyss">${item.name}</h3>
+                        <span class="font-serif text-2xl font-bold text-copper-dark mt-1 block">${item.price} ر.س</span>
+                    </div>
+                    <p class="text-abyss/85 text-sm leading-relaxed">${item.shortDesc}</p>
+                    <div class="p-4 rounded-2xl bg-white/85 border border-abyss/10 space-y-3">
+                        <div>
+                            <span class="text-xs font-bold text-foam-dark block">المصدر البحري / المحلي:</span>
+                            <p class="text-xs text-abyss/90 font-medium mt-0.5">${item.provenance}</p>
+                        </div>
+                        <div class="pt-2 border-t border-abyss/10">
+                            <span class="text-xs font-bold text-copper-dark block">ملاحظات التذوق:</span>
+                            <p class="text-xs text-abyss/85 leading-relaxed mt-0.5">${item.tastingNotes}</p>
+                        </div>
+                        <div class="pt-2 border-t border-abyss/10">
+                            <span class="text-xs font-bold text-abyss block">توصية الشيف للمرافقة:</span>
+                            <p class="text-xs text-abyss/80 mt-0.5">${item.pairing}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addToCart('${item.id}'); closeDishModal();" class="w-full py-3.5 rounded-xl bg-abyss hover:bg-basalt text-pearl font-bold text-sm transition-colors">
+                        أضف إلى تفضيلات الطاولة
+                    </button>
+                </div>
+            `;
+
+            const modal = document.getElementById('dish-modal');
+            const box = document.getElementById('dish-modal-box');
+            modal.classList.remove('hidden');
+
+            if (!isReducedMotion) {
+                gsap.fromTo(box, 
+                    { scale: 0.94, opacity: 0, y: 14 },
+                    { scale: 1, opacity: 1, y: 0, duration: 0.35, ease: 'power3.out' }
+                );
+            }
+        }
+
+        function closeDishModal() {
+            document.getElementById('dish-modal').classList.add('hidden');
+        }
+
+        function addToCart(id) {
+            const item = menuData.find(d => d.id === id);
+            if (!item) return;
+
+            const existing = cart.find(c => c.id === id);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+
+            updateCartUI(true);
+            renderMenu(false);
+            showToast(`تمت إضافة «${item.name}» لتفضيلات الطاولة`);
+        }
+
+        function updateCartQty(id, delta) {
+            const index = cart.findIndex(c => c.id === id);
+            if (index === -1) return;
+
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCartUI(false);
+            renderMenu(false);
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartUI(false);
+            renderMenu(false);
+        }
+
+        function updateCartUI(bounceBadge = false) {
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            const badge = document.getElementById('cart-badge');
+            badge.textContent = totalItems;
+            document.getElementById('inline-cart-count').textContent = totalItems;
+            document.getElementById('cart-total').textContent = `${totalPrice} ر.س`;
+            document.getElementById('prev-dishes').textContent = `${totalItems} أطباق (${totalPrice} ر.س)`;
+
+            if (bounceBadge && !isReducedMotion) {
+                gsap.fromTo(badge, 
+                    { scale: 1.45 },
+                    { scale: 1, duration: 0.4, ease: 'back.out(2)' }
+                );
+            }
+
+            const container = document.getElementById('cart-items-container');
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="py-12 text-center space-y-3">
+                        <p class="text-slate text-sm">قائمة تفضيلات الطاولة فارغة حالياً.</p>
+                        <p class="text-xs text-slate/60">اختر أطباقك المفضلة من القائمة لإرفاقها بحجزك.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = cart.map(item => `
+                <div class="p-4 rounded-2xl bg-basalt border border-pearl/10 flex items-center justify-between gap-3">
+                    <div>
+                        <h4 class="font-bold text-sm text-pearl">${item.name}</h4>
+                        <span class="text-xs text-copper font-medium">${item.price * item.qty} ر.س</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-abyss px-2 py-1 rounded-xl border border-pearl/15">
+                        <button type="button" onclick="updateCartQty('${item.id}', -1)" class="w-6 h-6 text-pearl hover:text-copper font-bold">-</button>
+                        <span class="text-xs font-bold text-pearl min-w-[18px] text-center">${item.qty}</span>
+                        <button type="button" onclick="updateCartQty('${item.id}', 1)" class="w-6 h-6 text-pearl hover:text-copper font-bold">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleDrawer() {
+            const drawer = document.getElementById('table-drawer');
+            const panel = document.getElementById('drawer-panel');
+            const isOpening = drawer.classList.contains('hidden');
+
+            if (isOpening) {
+                drawer.classList.remove('hidden');
+                updateCartUI(false);
+                if (!isReducedMotion) {
+                    gsap.fromTo(panel, { x: '-100%' }, { x: '0%', duration: 0.38, ease: 'power3.out' });
+                }
+            } else {
+                drawer.classList.add('hidden');
+            }
+        }
+
+        function transferPreferencesToNotes() {
+            if (cart.length === 0) {
+                showToast('قائمة التفضيلات فارغة حالياً');
+                return;
+            }
+            const summaryText = cart.map(item => `${item.name} (×${item.qty})`).join('، ');
+            const notesField = document.getElementById('guest-notes');
+            const prefix = 'تفضيلات الأطباق المختارة: ';
+            notesField.value = notesField.value.trim() 
+                ? `${notesField.value.trim()} | ${prefix}${summaryText}`
+                : `${prefix}${summaryText}`;
+
+            toggleDrawer();
+            document.getElementById('reservation').scrollIntoView({ behavior: isReducedMotion ? 'auto' : 'smooth' });
+            showToast('تم نقل تفضيلات الطاولة إلى ملاحظات الحجز');
+        }
+
+        /* ==========================================================================
+           7. نظام حجز الطاولات + الإمالة التفاعلية ثلاثية الأبعاد لبطاقة الدعوة
+           ========================================================================== */
+        let bookingState = {
+            date: '',
+            guests: 2,
+            period: 'dinner',
+            time: '٠٨:٣٠ م',
+            seating: 'شرفة الحوض العاكس'
+        };
+
+        const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        function toArabicNum(num) {
+            return String(num).split('').map(d => arabicDigits[parseInt(d, 10)] ?? d).join('');
+        }
+
+        const timeOptions = {
+            lunch: ['١٢:٣٠ م', '٠١:١٥ م', '٠٢:٠٠ م', '٠٢:٤٥ م', '٠٣:٣٠ م', '٠٤:٠٠ م'],
+            dinner: ['٠٧:٠٠ م', '٠٧:٤٥ م', '٠٨:٣٠ م', '٠٩:١٥ م', '١٠:٠٠ م', '١٠:٤٥ م']
+        };
+
+        function stepGuests(delta) {
+            const next = Math.max(1, Math.min(10, bookingState.guests + delta));
+            bookingState.guests = next;
+            document.getElementById('guest-count-display').textContent = toArabicNum(next);
+            updatePreview();
+        }
+
+        function selectPeriod(period) {
+            bookingState.period = period;
+            const lunchBtn = document.getElementById('period-lunch');
+            const dinnerBtn = document.getElementById('period-dinner');
+
+            if (period === 'lunch') {
+                lunchBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold bg-abyss text-pearl transition-colors';
+                dinnerBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold text-abyss/70 transition-colors';
+                bookingState.time = timeOptions.lunch[1];
+            } else {
+                dinnerBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold bg-abyss text-pearl transition-colors';
+                lunchBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold text-abyss/70 transition-colors';
+                bookingState.time = timeOptions.dinner[2];
+            }
+            renderTimeSlots();
+            updatePreview();
+        }
+
+        function renderTimeSlots() {
+            const container = document.getElementById('time-slots');
+            const slots = timeOptions[bookingState.period];
+
+            container.innerHTML = slots.map(slot => {
+                const isSelected = slot === bookingState.time;
+                return `
+                    <button type="button" onclick="selectTime('${slot}')" class="py-2.5 px-3 rounded-xl text-xs font-bold transition-colors ${
+                        isSelected 
+                        ? 'bg-abyss text-copper border border-abyss' 
+                        : 'bg-sand/50 text-abyss border border-abyss/15 hover:border-abyss'
+                    }">
+                        ${slot}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectTime(slot) {
+            bookingState.time = slot;
+            renderTimeSlots();
+            updatePreview();
+        }
+
+        function selectSeating(seat) {
+            bookingState.seating = seat;
+            document.querySelectorAll('.seat-btn').forEach(btn => {
+                const title = btn.querySelector('span:first-child');
+                const desc = btn.querySelector('span:last-child');
+                if (btn.dataset.seat === seat) {
+                    btn.className = 'seat-btn text-right p-4 rounded-xl border-2 border-abyss bg-abyss text-pearl transition-all';
+                    title.className = 'block font-bold text-sm mb-1 text-copper';
+                    desc.className = 'block text-xs text-slate leading-relaxed';
+                } else {
+                    btn.className = 'seat-btn text-right p-4 rounded-xl border border-abyss/15 bg-sand/40 text-abyss hover:border-abyss transition-all';
+                    title.className = 'block font-bold text-sm mb-1 text-abyss';
+                    desc.className = 'block text-xs text-abyss/70 leading-relaxed';
+                }
+            });
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const nameInput = document.getElementById('guest-name').value.trim();
+            const dateInput = document.getElementById('res-date').value;
+            bookingState.date = dateInput;
+
+            document.getElementById('prev-name').textContent = nameInput || 'بانتظار إدخال الاسم';
+            document.getElementById('prev-date').textContent = dateInput || '—';
+            
+            const periodLabel = bookingState.period === 'lunch' ? 'غداء الساحل' : 'عشاء الغسق';
+            document.getElementById('prev-time').textContent = `${bookingState.time} (${periodLabel})`;
+            
+            const guestWord = bookingState.guests === 1 ? 'ضيف واحد' : bookingState.guests === 2 ? 'ضيفان' : `${toArabicNum(bookingState.guests)} ضيوف`;
+            document.getElementById('prev-guests').textContent = guestWord;
+            document.getElementById('prev-seat').textContent = bookingState.seating;
+        }
+
+        // إمالة بطاقة الدعوة ثلاثية الأبعاد عند تمرير المؤشر (Live 3D-Tilt Invitation Pass)
+        const invitationCard = document.getElementById('invitation-card-3d');
+        const cardSheen = document.getElementById('card-specular-sheen');
+        if (invitationCard && supportsFinePointer) {
+            invitationCard.addEventListener('mousemove', (e) => {
+                if (isReducedMotion) return;
+                const rect = invitationCard.getBoundingClientRect();
+                const xPct = (e.clientX - rect.left) / rect.width;
+                const yPct = (e.clientY - rect.top) / rect.height;
+                const rotY = round3((xPct - 0.5) * 12);
+                const rotX = round3((0.5 - yPct) * 12);
+
+                invitationCard.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+                if (cardSheen) {
+                    cardSheen.style.opacity = '1';
+                    cardSheen.style.background = `radial-gradient(circle at ${(xPct * 100).toFixed(1)}% ${(yPct * 100).toFixed(1)}%, rgba(200,138,85,0.25), transparent 65%)`;
+                }
+            });
+
+            invitationCard.addEventListener('mouseleave', () => {
+                invitationCard.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                if (cardSheen) cardSheen.style.opacity = '0';
+            });
+        }
+
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('guest-name').value.trim();
+            const phone = document.getElementById('guest-phone').value.trim();
+            const notes = document.getElementById('guest-notes').value.trim();
+
+            if (!name || !phone) {
+                showToast('يرجى إدخال الاسم ورقم الجوال لإتمام الحجز');
+                return;
+            }
+
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            const refCode = `BHR-${randomNum}`;
+
+            document.getElementById('booking-ref-code').textContent = refCode;
+            document.getElementById('confirm-subtitle').textContent = `أهلاً بك أ. ${name}، تم تسجيل دعوتك بنجاح.`;
+
+            const periodLabel = bookingState.period === 'lunch' ? 'غداء الساحل' : 'عشاء الغسق';
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            document.getElementById('confirm-summary').innerHTML = `
+                <p><strong>التاريخ والوقت:</strong> ${bookingState.date} • ${bookingState.time} (${periodLabel})</p>
+                <p><strong>الضيوف والمنطقة:</strong> ${toArabicNum(bookingState.guests)} ضيوف • ${bookingState.seating}</p>
+                <p><strong>رقم الجوال:</strong> <span dir="ltr">${phone}</span></p>
+                ${totalItems > 0 ? `<p class="text-copper"><strong>تفضيلات الطاولة:</strong> ${toArabicNum(totalItems)} أطباق مرفقة</p>` : ''}
+                ${notes ? `<p><strong>ملاحظات الضيافة:</strong> ${notes}</p>` : ''}
+            `;
+
+            const modal = document.getElementById('confirm-modal');
+            const box = document.getElementById('confirm-modal-box');
+            const stamp = document.getElementById('confirm-stamp-badge');
+            modal.classList.remove('hidden');
+
+            if (!isReducedMotion) {
+                gsap.fromTo(box,
+                    { scale: 0.9, opacity: 0, y: 20 },
+                    { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }
+                );
+                gsap.fromTo(stamp,
+                    { scale: 1.8, rotation: -15, opacity: 0 },
+                    { scale: 1, rotation: 0, opacity: 1, duration: 0.55, delay: 0.15, ease: 'back.out(1.8)' }
+                );
+            }
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
+        function copyRefCode() {
+            const code = document.getElementById('booking-ref-code').textContent;
+            const tempInput = document.createElement('input');
+            tempInput.value = code;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(`تم نسخ رمز الحجز (${code})`);
+        }
+
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        /* ==========================================================================
+           8. التهيئة الكاملة عند التحميل (Window Load)
+           ========================================================================== */
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('res-date');
+            dateInput.min = today;
+            dateInput.value = today;
+            bookingState.date = today;
+
+            renderMenu(false);
+            renderTimeSlots();
+            updatePreview();
+            resizeHeroCanvas();
+
+            // ضبط موقع كبسولة الفلتر الأولية
+            const initialDietBtn = document.querySelector('.diet-btn[data-diet="all"]');
+            updateDietaryPillPosition(initialDietBtn);
+
+            applyMotionTierState();
+            initGSAPChoreography();
+            requestAnimationFrame(masterAnimationLoop);
+        };
+    </script>
+</body>
+</html>
